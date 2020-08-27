@@ -33,6 +33,9 @@ find_package(OpenGL REQUIRED)
 find_package(GLFW3 REQUIRED)
 message(STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
 
+# STB_IMAGE
+add_library(STB_IMAGE "thirdparty/stb_image.cpp")
+
 # GLAD
 add_library(GLAD "thirdparty/glad.c")
 
@@ -44,7 +47,7 @@ include_directories(
 )
 
 # Put all libraries into a variable
-set(LIBS glfw3 opengl32 GLAD)
+set(LIBS glfw3 opengl32 GLAD STB_IMAGE)
 
 
 # Define the link libraries
