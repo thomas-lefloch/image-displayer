@@ -8,12 +8,12 @@ link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES 
-	${CMAKE_SOURCE_DIR}/src/*.c
+  ${CMAKE_SOURCE_DIR}/src/*.c
   ${CMAKE_SOURCE_DIR}/src/*.cpp)
-	
+  
 # Add header files
 file(GLOB_RECURSE HEADER_FILES 
-	${CMAKE_SOURCE_DIR}/src/*.h
+  ${CMAKE_SOURCE_DIR}/src/*.h
   ${CMAKE_SOURCE_DIR}/src/*.hpp)
 
 # Configure assets header file
@@ -39,15 +39,27 @@ add_library(STB_IMAGE "thirdparty/stb_image.cpp")
 # GLAD
 add_library(GLAD "thirdparty/glad.c")
 
+#imgui
+add_library(IMGUI 
+  "thirdparty/imgui.cpp"
+  "thirdparty/imgui_demo.cpp"
+  "thirdparty/imgui_draw.cpp"
+  "thirdparty/imgui_impl_glfw.cpp"
+  "thirdparty/imgui_impl_opengl3.cpp"
+  "thirdparty/imgui_widgets.cpp"
+
+  
+)
+
 
 # Define the include DIRs
 include_directories(
-	"${CMAKE_SOURCE_DIR}/src"
-	"${CMAKE_SOURCE_DIR}/include"
+  "${CMAKE_SOURCE_DIR}/src"
+  "${CMAKE_SOURCE_DIR}/include"
 )
 
 # Put all libraries into a variable
-set(LIBS glfw3 opengl32 GLAD STB_IMAGE)
+set(LIBS glfw3 opengl32 GLAD STB_IMAGE IMGUI)
 
 
 # Define the link libraries
@@ -57,5 +69,5 @@ target_link_libraries(${PROJECT_NAME} ${LIBS})
 # Hide the console window in visual studio projects - Release
 #--------------------------------------------------------------------
 if(MSVC)
-	set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 endif()
