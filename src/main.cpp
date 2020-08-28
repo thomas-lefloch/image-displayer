@@ -1,5 +1,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 #include <iostream>
 #include <math.h>
@@ -7,14 +11,41 @@
 
 #include <helpers/RootDir.h>
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-
 constexpr int window_width = 1600;
 constexpr int window_height = 900;
 
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+// Simple helper function to load an image into a OpenGL texture with common settings
+bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_width,
+                         int* out_height) {
+  // Load from file
+  int image_width = 0;
+  int image_height = 0;
+  unsigned char* image_data = stbi_load(filename, &image_width, &image_height, NULL, 4);
+  if (image_data == NULL) return false;
+
+  // Create a OpenGL texture identifier
+  GLuint image_texture;
+  glGenTextures(1, &image_texture);
+  glBindTexture(GL_TEXTURE_2D, image_texture);
+
+  // Setup filtering parameters for display
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // Upload pixels into texture
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               image_data);
+  stbi_image_free(image_data);
+
+  *out_texture = image_texture;
+  *out_width = image_width;
+  *out_height = image_height;
+
+  return true;
+}
 
 int main() {
   glfwInit();
@@ -52,6 +83,19 @@ int main() {
 
   glViewport(0, 0, window_width, window_height);
 
+  int im_width = 0;
+  int im_height = 0;
+  GLuint texture = 0;
+  bool ret = LoadTextureFromFile(ROOT_DIR "res/donut.jpg", &texture, &im_width, &im_height);
+
+  float vertices[] = {
+      // positions        // texture coords
+      0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  // top right
+      0.5f,  -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,  // bottom left
+      -0.5f, 0.5f,  0.0f, 0.0f, 1.0f   // top left
+  };
+
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
@@ -60,6 +104,10 @@ int main() {
     ImGui::NewFrame();
 
     ImGui::ShowDemoWindow();
+
+    ImGui::Begin("Image");
+    ImGui::Image((void*)(intptr_t)texture, ImVec2(im_width, im_height));
+    ImGui::End();
 
     ImGui::Render();
     int display_w, display_h;
