@@ -35,6 +35,10 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    // set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
     // Upload pixels into texture
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -91,17 +95,14 @@ int main()
     GLuint texture = 0;
     bool ret = LoadTextureFromFile(ROOT_DIR "res/donut.jpg", &texture, &im_width, &im_height);
 
-    float vertices[] = { // top right
-        .5f, .5f, 0, 1, 1,
-        // bottom right
-        .5f, -.5f, 0, 1, 0,
-        // top left
-        -.5f, .5f, 0, 0, 1,
-        // bottom left
-        -.5f, -.5f, 0, 0, 0
+    float vertices[] = {
+        .7f, -.7f, 0.0f, 1.0f, 1.0f, // top right
+        .7f, .7f, 0.0f, 1.0f, 0.0f, // bottom right
+        -.7f, .7f, 0.0f, 0.0f, 0.0f, // bottom left
+        -.7f, -.7f, 0.0f, 0.0f, 1.0f // top left
     };
 
-    unsigned int indices[] = { 0, 1, 2, 1, 2, 3 };
+    unsigned int indices[] = { 1, 2, 3, 3, 0, 1 };
 
     unsigned int vao, vbo, ebo;
     glGenVertexArrays(1, &vao);
@@ -116,8 +117,10 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     int shader_id
         = create_shader_program(ROOT_DIR "shaders/vertex.vs", ROOT_DIR "shaders/fragment.fs");
@@ -143,9 +146,9 @@ int main()
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glBindTexture(GL_TEXTURE_2D, texture);
         glUseProgram(shader_id);
         glBindVertexArray(vao);
-
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
