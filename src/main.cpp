@@ -91,11 +91,6 @@ int main()
 
     glViewport(0, 0, window_width, window_height);
 
-    // TODO: manage image size (larger, wider, longer, ... than viewport)
-    int im_width = 0;
-    int im_height = 0;
-    GLuint texture = 0;
-
     float vertices[] = {
         1.0f, -1.0f, 0.0f, 1.0f, 1.0f, //
         1.0f, 1.0f, 0.0f, 1.0f, 0.0f, //
@@ -170,9 +165,17 @@ int main()
             glBindTexture(GL_TEXTURE_2D, texture);
             glUseProgram(shader_id);
             glBindVertexArray(vao);
+            // probably exist a better solution to make the image fit the window
             float img_ratio[2] = { //
                 (float)im_width / (float)window_width, (float)im_height / (float)window_height
             };
+            if (img_ratio[0] < img_ratio[1]) {
+                img_ratio[0] = img_ratio[0] / img_ratio[1];
+                img_ratio[1] = 1;
+            } else {
+                img_ratio[1] = img_ratio[1] / img_ratio[0];
+                img_ratio[0] = 1;
+            }
             glUniform2fv(img_ratio_uniform, 1, img_ratio);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         }
