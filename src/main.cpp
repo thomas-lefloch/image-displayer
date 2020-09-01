@@ -92,11 +92,15 @@ int main()
     glViewport(0, 0, window_width, window_height);
 
     // TODO: manage image size (larger, wider, longer, ... than viewport)
+    int im_width = 0;
+    int im_height = 0;
+    GLuint texture = 0;
+
     float vertices[] = {
-        1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top right
-        1.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-        -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, // bottom left
-        -1.0f, -1.0f, 0.0f, 0.0f, 1.0f // top left
+        1.0f, -1.0f, 0.0f, 1.0f, 1.0f, //
+        1.0f, 1.0f, 0.0f, 1.0f, 0.0f, //
+        -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, //
+        -1.0f, -1.0f, 0.0f, 0.0f, 1.0f //
     };
 
     unsigned int indices[] = { 1, 2, 3, 3, 0, 1 };
@@ -123,6 +127,8 @@ int main()
         = create_shader_program(ROOT_DIR "shaders/vertex.vs", ROOT_DIR "shaders/fragment.fs");
     if (shader_id == -1) std::cout << "Error while parsing/compiling shaders" << std::endl;
 
+    int img_ratio_uniform = glGetUniformLocation(shader_id, "img_ratio");
+
     std::vector<std::string> filelist;
     const std::string path = ROOT_DIR "res";
     for (const auto& file : std::filesystem::directory_iterator(path))
@@ -148,6 +154,9 @@ int main()
                 LoadTextureFromFile(filepath.c_str(), &texture, &im_width, &im_height);
             }
         }
+        if (im_width && im_height) {
+            ImGui::Text("%d, %d", im_width, im_height);
+        }
         ImGui::End();
 
         ImGui::Render();
@@ -161,6 +170,10 @@ int main()
             glBindTexture(GL_TEXTURE_2D, texture);
             glUseProgram(shader_id);
             glBindVertexArray(vao);
+            float img_ratio[2] = { //
+                (float)im_width / (float)window_width, (float)im_height / (float)window_height
+            };
+            glUniform2fv(img_ratio_uniform, 1, img_ratio);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         }
 
