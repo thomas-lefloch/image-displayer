@@ -53,8 +53,6 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
     return true;
 }
 
-void select_image(const char* filepath) { std::cout << filepath << std::endl; }
-
 int main()
 {
     glfwInit();
@@ -96,7 +94,7 @@ int main()
     int im_width = 0;
     int im_height = 0;
     GLuint texture = 0;
-    bool ret = LoadTextureFromFile(ROOT_DIR "res/donut.jpg", &texture, &im_width, &im_height);
+    // bool ret = LoadTextureFromFile(ROOT_DIR "res/donut.jpg", &texture, &im_width, &im_height);
 
     float vertices[] = {
         1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top right
@@ -159,10 +157,12 @@ int main()
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glUseProgram(shader_id);
-        glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        if (texture) {
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glUseProgram(shader_id);
+            glBindVertexArray(vao);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        }
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
