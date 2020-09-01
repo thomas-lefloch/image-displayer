@@ -9,6 +9,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <helpers/RootDir.h>
+#include <filesystem>
 
 #include "shader.hpp"
 
@@ -51,6 +52,8 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 
     return true;
 }
+
+void select_image(const char* filepath) { std::cout << filepath << std::endl; }
 
 int main()
 {
@@ -96,10 +99,10 @@ int main()
     bool ret = LoadTextureFromFile(ROOT_DIR "res/donut.jpg", &texture, &im_width, &im_height);
 
     float vertices[] = {
-        .7f, -.7f, 0.0f, 1.0f, 1.0f, // top right
-        .7f, .7f, 0.0f, 1.0f, 0.0f, // bottom right
-        -.7f, .7f, 0.0f, 0.0f, 0.0f, // bottom left
-        -.7f, -.7f, 0.0f, 0.0f, 1.0f // top left
+        1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top right
+        1.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+        -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, // bottom left
+        -1.0f, -1.0f, 0.0f, 0.0f, 1.0f // top left
     };
 
     unsigned int indices[] = { 1, 2, 3, 3, 0, 1 };
@@ -126,6 +129,11 @@ int main()
         = create_shader_program(ROOT_DIR "shaders/vertex.vs", ROOT_DIR "shaders/fragment.fs");
     if (shader_id == -1) std::cout << "Error while parsing/compiling shaders" << std::endl;
 
+    std::vector<std::string> filelist;
+    const std::string path = ROOT_DIR "res";
+    for (const auto& file : std::filesystem::directory_iterator(path))
+        filelist.push_back(file.path().string());
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -135,9 +143,14 @@ int main()
 
         ImGui::ShowDemoWindow();
 
-        // ImGui::Begin("Image");
-        // ImGui::Image((void*)(intptr_t)texture, ImVec2(im_width, im_height));
-        // ImGui::End();
+        ImGui::Begin("files");
+        for (const auto& filepath : filelist) {
+            if (ImGui::Button(filepath.c_str())) {
+                glDeleteTextures(1, &texture);
+                LoadTextureFromFile(filepath.c_str(), &texture, &im_width, &im_height);
+            }
+        }
+        ImGui::End();
 
         ImGui::Render();
         int display_w, display_h;

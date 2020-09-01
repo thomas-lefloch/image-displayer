@@ -62,7 +62,7 @@ set(LIBS glfw3 opengl32 GLAD STB_IMAGE IMGUI)
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} ${LIBS})
-
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 #--------------------------------------------------------------------
 # Hide the console window in visual studio projects - Release
 #--------------------------------------------------------------------
