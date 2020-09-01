@@ -91,11 +91,7 @@ int main()
 
     glViewport(0, 0, window_width, window_height);
 
-    int im_width = 0;
-    int im_height = 0;
-    GLuint texture = 0;
-    // bool ret = LoadTextureFromFile(ROOT_DIR "res/donut.jpg", &texture, &im_width, &im_height);
-
+    // TODO: manage image size (larger, wider, longer, ... than viewport)
     float vertices[] = {
         1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top right
         1.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
@@ -132,6 +128,9 @@ int main()
     for (const auto& file : std::filesystem::directory_iterator(path))
         filelist.push_back(file.path().string());
 
+    int im_width = 0;
+    int im_height = 0;
+    GLuint texture = 0;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -144,6 +143,7 @@ int main()
         ImGui::Begin("files");
         for (const auto& filepath : filelist) {
             if (ImGui::Button(filepath.c_str())) {
+                // TODO: memory leak ???
                 glDeleteTextures(1, &texture);
                 LoadTextureFromFile(filepath.c_str(), &texture, &im_width, &im_height);
             }

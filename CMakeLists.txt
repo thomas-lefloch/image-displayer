@@ -47,6 +47,7 @@ add_library(IMGUI
   "thirdparty/imgui_impl_glfw.cpp"
   "thirdparty/imgui_impl_opengl3.cpp"
   "thirdparty/imgui_widgets.cpp"
+  "thirdparty/imgui_stdlib.cpp"
 )
 
 
