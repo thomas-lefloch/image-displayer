@@ -4,6 +4,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "imgui_stdlib.h"
 
 #include <iostream>
 #include <math.h>
@@ -132,14 +133,13 @@ int main()
     int im_width = 0;
     int im_height = 0;
     GLuint texture = 0;
+    static std::string* input_path = new std::string("");
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        ImGui::ShowDemoWindow();
 
         ImGui::Begin("files");
         for (const auto& filepath : filelist) {
@@ -148,6 +148,14 @@ int main()
                 glDeleteTextures(1, &texture);
                 LoadTextureFromFile(filepath.c_str(), &texture, &im_width, &im_height);
             }
+        }
+
+        // TODO: add multiple folder input
+        // TODO: read folder after path is selected
+        // TODO: make enter key press "Ok" button
+        ImGui::InputText("Folder path", input_path);
+        if (ImGui::Button("Ok")) {
+            std::cout << "path: " << *input_path << std::endl;
         }
         if (im_width && im_height) {
             ImGui::Text("%d, %d", im_width, im_height);
@@ -181,13 +189,14 @@ int main()
         }
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
         glfwSwapBuffers(window);
     }
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+
+    delete input_path;
 
     glfwDestroyWindow(window);
     glfwTerminate();
