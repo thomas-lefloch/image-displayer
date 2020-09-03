@@ -152,9 +152,6 @@ int main()
                 error_messages.clear();
                 filelist.clear();
                 bool has_error = false;
-                // TODO: check for images
-                // -> black texture if trying to display something other than an image
-                // = display palceholder image (image not recognized, please open something else)
                 if (!std::filesystem::exists(input_path)) {
                     error_messages.push_back(input_path + " not found");
                     has_error = true;
@@ -173,6 +170,10 @@ int main()
                 if (ImGui::Button(filepath.c_str())) {
                     // TODO: memory leak ???
                     glDeleteTextures(1, &texture);
+                    // TODO: check for images
+                    // -> black texture if trying to display something other than an image
+                    // = display palceholder image (image not recognized, please open something
+                    // else)
                     LoadTextureFromFile(filepath.c_str(), &texture, &im_width, &im_height);
                 }
             }
@@ -225,5 +226,3 @@ int main()
     glfwTerminate();
     return 0;
 }
-
-// int main() { ImGui::ShowDemoWindow(); }
