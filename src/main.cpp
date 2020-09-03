@@ -126,14 +126,12 @@ int main()
     int img_ratio_uniform = glGetUniformLocation(shader_id, "img_ratio");
 
     std::vector<std::string> filelist;
-    const std::string path = ROOT_DIR "res";
-    for (const auto& file : std::filesystem::directory_iterator(path))
-        filelist.push_back(file.path().string());
 
     int im_width = 0;
     int im_height = 0;
     GLuint texture = 0;
-    static std::string* input_path = new std::string("");
+    static std::string input_path;
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -142,6 +140,21 @@ int main()
         ImGui::NewFrame();
 
         ImGui::Begin("files");
+
+        // TODO: add multiple folder input
+        // TODO: read folder after path is selected
+        // TODO: make enter key press "Ok" button
+        ImGui::InputText("Folder path", &input_path);
+        if (ImGui::Button("Ok")) {
+            // TODO: crashes if path does not exists
+            // TODO: check for images
+            // -> black texture if trying to display something other than an image
+            // = display palceholder image (image not recognized, please open something else)
+            // TODO: clean filelist when reclilcking the button
+            for (const auto& file : std::filesystem::directory_iterator(input_path))
+                filelist.push_back(file.path().string());
+        }
+
         for (const auto& filepath : filelist) {
             if (ImGui::Button(filepath.c_str())) {
                 // TODO: memory leak ???
@@ -150,16 +163,10 @@ int main()
             }
         }
 
-        // TODO: add multiple folder input
-        // TODO: read folder after path is selected
-        // TODO: make enter key press "Ok" button
-        ImGui::InputText("Folder path", input_path);
-        if (ImGui::Button("Ok")) {
-            std::cout << "path: " << *input_path << std::endl;
-        }
         if (im_width && im_height) {
             ImGui::Text("%d, %d", im_width, im_height);
         }
+
         ImGui::End();
 
         ImGui::Render();
@@ -195,8 +202,6 @@ int main()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-
-    delete input_path;
 
     glfwDestroyWindow(window);
     glfwTerminate();
