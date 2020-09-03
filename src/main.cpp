@@ -126,11 +126,11 @@ int main()
     int img_ratio_uniform = glGetUniformLocation(shader_id, "img_ratio");
 
     std::vector<std::string> filelist;
-
     int im_width = 0;
     int im_height = 0;
     GLuint texture = 0;
     static std::string input_path;
+    static int input_timer;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -139,35 +139,46 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("files");
+        {
+            static std::vector<std::string> error_messages;
 
-        // TODO: add multiple folder input
-        // TODO: read folder after path is selected
-        // TODO: make enter key press "Ok" button
-        ImGui::InputText("Folder path", &input_path);
-        if (ImGui::Button("Ok")) {
-            // TODO: crashes if path does not exists
-            // TODO: check for images
-            // -> black texture if trying to display something other than an image
-            // = display palceholder image (image not recognized, please open something else)
-            // TODO: clean filelist when reclilcking the button
-            for (const auto& file : std::filesystem::directory_iterator(input_path))
-                filelist.push_back(file.path().string());
-        }
-
-        for (const auto& filepath : filelist) {
-            if (ImGui::Button(filepath.c_str())) {
-                // TODO: memory leak ???
-                glDeleteTextures(1, &texture);
-                LoadTextureFromFile(filepath.c_str(), &texture, &im_width, &im_height);
+            ImGui::Begin("files");
+            // TODO: add multiple folder input
+            // TODO: read folder after path is selected
+            // TODO: make enter key press "Ok" button
+            ImGui::InputText("Folder path", &input_path);
+            ImGui::InputInt("Timer (sec)", &input_timer);
+            if (ImGui::Button("Ok")) {
+                // TODO: check for images
+                // -> black texture if trying to display something other than an image
+                // = display palceholder image (image not recognized, please open something else)
+                filelist.clear();
+                if (std::filesystem::exists(input_path)) {
+                    for (const auto& file : std::filesystem::directory_iterator(input_path))
+                        filelist.push_back(file.path().string());
+                } else {
+                    // TODO: clean not found error messages
+                    error_messages.push_back(input_path + " not found");
+                }
             }
-        }
 
-        if (im_width && im_height) {
-            ImGui::Text("%d, %d", im_width, im_height);
-        }
+            for (const auto& filepath : filelist) {
+                if (ImGui::Button(filepath.c_str())) {
+                    // TODO: memory leak ???
+                    glDeleteTextures(1, &texture);
+                    LoadTextureFromFile(filepath.c_str(), &texture, &im_width, &im_height);
+                }
+            }
+            if (im_width && im_height) {
+                ImGui::Text("%d, %d", im_width, im_height);
+            }
 
-        ImGui::End();
+            for (const auto& err_msg : error_messages) {
+                // TODO: red text
+                ImGui::Text(err_msg.c_str());
+            }
+            ImGui::End();
+        }
 
         ImGui::Render();
         int display_w, display_h;
@@ -194,8 +205,8 @@ int main()
             glUniform2fv(img_ratio_uniform, 1, img_ratio);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         }
-
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window);
     }
 
