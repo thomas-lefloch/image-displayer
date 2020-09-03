@@ -39,6 +39,7 @@
     "fstream": "cpp",
     "sstream": "cpp",
     "string": "cpp",
-    "filesystem": "cpp"
+    "filesystem": "cpp",
+    "vector": "cpp"
   }
 }

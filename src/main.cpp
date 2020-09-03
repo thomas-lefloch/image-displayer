@@ -141,24 +141,31 @@ int main()
 
         {
             static std::vector<std::string> error_messages;
-
             ImGui::Begin("files");
+
             // TODO: add multiple folder input
-            // TODO: read folder after path is selected
             // TODO: make enter key press "Ok" button
             ImGui::InputText("Folder path", &input_path);
+            // TODO: default to 30sec, minimum 1
             ImGui::InputInt("Timer (sec)", &input_timer);
             if (ImGui::Button("Ok")) {
+                error_messages.clear();
+                filelist.clear();
+                bool has_error = false;
                 // TODO: check for images
                 // -> black texture if trying to display something other than an image
                 // = display palceholder image (image not recognized, please open something else)
-                filelist.clear();
-                if (std::filesystem::exists(input_path)) {
+                if (!std::filesystem::exists(input_path)) {
+                    error_messages.push_back(input_path + " not found");
+                    has_error = true;
+                }
+                if (input_timer < 1) {
+                    error_messages.push_back("timer must be > 1 sec");
+                    has_error = true;
+                }
+                if (!has_error) {
                     for (const auto& file : std::filesystem::directory_iterator(input_path))
                         filelist.push_back(file.path().string());
-                } else {
-                    // TODO: clean not found error messages
-                    error_messages.push_back(input_path + " not found");
                 }
             }
 
