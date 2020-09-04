@@ -19,8 +19,14 @@ constexpr int window_height = 900;
 
 ImVec4 clear_color = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 
+struct Texture {
+    GLuint id = 0;
+    int width = 0;
+    int height = 0;
+};
+
 // Simple helper function to load an image into a OpenGL texture with common settings
-bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_width, int* out_height)
+bool load_texture(const char* filename, Texture* out_texture)
 {
     // Load from file
     int image_width = 0;
@@ -47,9 +53,9 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
         image_data);
     stbi_image_free(image_data);
 
-    *out_texture = image_texture;
-    *out_width = image_width;
-    *out_height = image_height;
+    out_texture->id = image_texture;
+    out_texture->width = image_width;
+    out_texture->height = image_height;
 
     return true;
 }
@@ -126,9 +132,7 @@ int main()
     int img_ratio_uniform = glGetUniformLocation(shader_id, "img_ratio");
 
     std::vector<std::string> filelist;
-    int im_width = 0;
-    int im_height = 0;
-    GLuint texture = 0;
+    Texture current_texture;
     static std::string input_path;
     static int input_timer;
 
@@ -139,7 +143,7 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        {
+        if (filelist.empty()) {
             static std::vector<std::string> error_messages;
             ImGui::Begin("files");
 
@@ -169,22 +173,25 @@ int main()
             for (const auto& filepath : filelist) {
                 if (ImGui::Button(filepath.c_str())) {
                     // TODO: memory leak ???
-                    glDeleteTextures(1, &texture);
+                    glDeleteTextures(1, &current_texture.id);
                     // TODO: check for images
                     // -> black texture if trying to display something other than an image
                     // = display palceholder image (image not recognized, please open something
                     // else)
-                    LoadTextureFromFile(filepath.c_str(), &texture, &im_width, &im_height);
+                    load_texture(filepath.c_str(), &current_texture);
                 }
             }
-            if (im_width && im_height) {
-                ImGui::Text("%d, %d", im_width, im_height);
+            if (current_texture.width && current_texture.height) {
+                ImGui::Text("%d, %d", current_texture.width, current_texture.height);
             }
 
             for (const auto& err_msg : error_messages) {
                 // TODO: red text
                 ImGui::Text(err_msg.c_str());
             }
+            ImGui::End();
+        } else {
+            ImGui::Begin("Control panel");
             ImGui::End();
         }
 
@@ -195,13 +202,14 @@ int main()
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (texture) {
-            glBindTexture(GL_TEXTURE_2D, texture);
+        if (current_texture.id) {
+            glBindTexture(GL_TEXTURE_2D, current_texture.id);
             glUseProgram(shader_id);
             glBindVertexArray(vao);
             // probably exist a better solution to make the image fit the window
             float img_ratio[2] = { //
-                (float)im_width / (float)window_width, (float)im_height / (float)window_height
+                (float)current_texture.width / (float)window_width,
+                (float)current_texture.height / (float)window_height
             };
             if (img_ratio[0] < img_ratio[1]) {
                 img_ratio[0] = img_ratio[0] / img_ratio[1];
