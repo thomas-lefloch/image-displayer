@@ -49,8 +49,7 @@ bool load_texture(const char* filename, Texture* out_texture)
 
     // Upload pixels into texture
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-        image_data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
     stbi_image_free(image_data);
 
     out_texture->id = image_texture;
@@ -67,8 +66,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window
-        = glfwCreateWindow(window_width, window_height, "Image displayer", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Image displayer", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create window" << std::endl;
         glfwTerminate();
@@ -125,16 +123,22 @@ int main()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    int shader_id
-        = create_shader_program(ROOT_DIR "shaders/vertex.vs", ROOT_DIR "shaders/fragment.fs");
+    int shader_id = create_shader_program(ROOT_DIR "shaders/vertex.vs", ROOT_DIR "shaders/fragment.fs");
     if (shader_id == -1) std::cout << "Error while parsing/compiling shaders" << std::endl;
 
     int img_ratio_uniform = glGetUniformLocation(shader_id, "img_ratio");
 
+    Texture current_texture, play_texture, pause_texture, prev_texture, next_texture, close_texture;
+    load_texture(ROOT_DIR "res/play.png", &play_texture);
+    load_texture(ROOT_DIR "res/pause.png", &pause_texture);
+    load_texture(ROOT_DIR "res/prev.png", &prev_texture);
+    load_texture(ROOT_DIR "res/next.png", &next_texture);
+    load_texture(ROOT_DIR "res/close.png", &close_texture);
+
     std::vector<std::string> filelist;
-    Texture current_texture;
+    bool playing = false;
     static std::string input_path;
-    static int input_timer;
+    static int timer;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -151,7 +155,7 @@ int main()
             // TODO: make enter key press "Ok" button
             ImGui::InputText("Folder path", &input_path);
             // TODO: default to 30sec, minimum 1
-            ImGui::InputInt("Timer (sec)", &input_timer);
+            ImGui::InputInt("Timer (sec)", &timer);
             if (ImGui::Button("Ok")) {
                 error_messages.clear();
                 filelist.clear();
@@ -160,7 +164,7 @@ int main()
                     error_messages.push_back(input_path + " not found");
                     has_error = true;
                 }
-                if (input_timer < 1) {
+                if (timer < 1) {
                     error_messages.push_back("timer must be > 1 sec");
                     has_error = true;
                 }
@@ -192,6 +196,33 @@ int main()
             ImGui::End();
         } else {
             ImGui::Begin("Control panel");
+            ImGui::Text(std::to_string(timer).c_str()); // better way ???
+            ImGui::SameLine();
+            // TODO: refactor. (with lambda ??)
+            if (ImGui::ImageButton((ImTextureID)prev_texture.id, ImVec2(prev_texture.width, prev_texture.height))) {
+                // previous image
+            }
+            ImGui::SameLine();
+            if (!playing) {
+                if (ImGui::ImageButton((ImTextureID)play_texture.id, ImVec2(play_texture.width, play_texture.height))) {
+                    playing = true;
+                }
+            } else {
+                if (ImGui::ImageButton(
+                        (ImTextureID)pause_texture.id, ImVec2(pause_texture.width, pause_texture.height))) {
+                    playing = false;
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::ImageButton((ImTextureID)next_texture.id, ImVec2(next_texture.width, next_texture.height))) {
+                // next image
+            }
+            ImGui::SameLine();
+            if (ImGui::ImageButton((ImTextureID)close_texture.id, ImVec2(close_texture.width, close_texture.height))) {
+                // back to selecting folders
+                filelist.clear();
+            }
+
             ImGui::End();
         }
 
@@ -208,8 +239,7 @@ int main()
             glBindVertexArray(vao);
             // probably exist a better solution to make the image fit the window
             float img_ratio[2] = { //
-                (float)current_texture.width / (float)window_width,
-                (float)current_texture.height / (float)window_height
+                (float)current_texture.width / (float)window_width, (float)current_texture.height / (float)window_height
             };
             if (img_ratio[0] < img_ratio[1]) {
                 img_ratio[0] = img_ratio[0] / img_ratio[1];
