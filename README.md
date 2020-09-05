@@ -1,6 +1,9 @@
 # Image displayer
 Displays random images from selected directories during a selected time
 
+## State
+Work in progress. not usable
+
 ## Todo / features
 * select images from multiple folder
 * save image display order (session)
@@ -13,7 +16,7 @@ Displays random images from selected directories during a selected time
 * user experience enhancement (file browser, ...)
 
 ## Licence
-not decided yet but software is free to use
+not decided yet but software is free to use 
 
 ## Icons
 Icons made by [roundicons](https://www.flaticon.com/authors/roundicons) from [Flaticon](www.flaticon.com)
