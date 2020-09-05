@@ -138,9 +138,20 @@ int main()
     std::vector<std::string> filelist;
     bool playing = false;
     static std::string input_path;
-    static int timer;
+    static int base_timer = 30;
+    double clock = base_timer;
 
     while (!glfwWindowShouldClose(window)) {
+
+        // TODO: refactor timer management
+        double start_time = glfwGetTime();
+        if (playing && clock < 0) {
+            // change image
+            // take one random from filelist and load it, display, delete it from the list
+            std::cout << "timer" << std::endl;
+            clock = base_timer;
+        }
+
         glfwPollEvents();
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -154,8 +165,8 @@ int main()
             // TODO: add multiple folder input
             // TODO: make enter key press "Ok" button
             ImGui::InputText("Folder path", &input_path);
-            // TODO: default to 30sec, minimum 1
-            ImGui::InputInt("Timer (sec)", &timer);
+            // TODO: minimum 1
+            ImGui::InputInt("Timer (sec)", &base_timer);
             if (ImGui::Button("Ok")) {
                 error_messages.clear();
                 filelist.clear();
@@ -164,11 +175,12 @@ int main()
                     error_messages.push_back(input_path + " not found");
                     has_error = true;
                 }
-                if (timer < 1) {
+                if (base_timer < 1) {
                     error_messages.push_back("timer must be > 1 sec");
                     has_error = true;
                 }
                 if (!has_error) {
+                    clock = base_timer;
                     for (const auto& file : std::filesystem::directory_iterator(input_path))
                         filelist.push_back(file.path().string());
                 }
@@ -196,7 +208,7 @@ int main()
             ImGui::End();
         } else {
             ImGui::Begin("Control panel");
-            ImGui::Text(std::to_string(timer).c_str()); // better way ???
+            ImGui::Text(std::to_string((int)clock).c_str()); // better way ???
             ImGui::SameLine();
             // TODO: refactor. (with lambda ??)
             if (ImGui::ImageButton((ImTextureID)prev_texture.id, ImVec2(prev_texture.width, prev_texture.height))) {
@@ -254,6 +266,8 @@ int main()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
+        // TODO: refactor timer management
+        if (playing) clock -= glfwGetTime() - start_time;
     }
 
     ImGui_ImplOpenGL3_Shutdown();
