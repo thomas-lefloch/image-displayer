@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <helpers/RootDir.h>
 #include <filesystem>
+#include <random>
 
 #include "shader.hpp"
 
@@ -81,19 +82,15 @@ int main()
     }
 
     const char* glsl_version = "#version 130";
-
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     (void)io;
-
     ImGui::StyleColorsDark();
-
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     glfwMakeContextCurrent(window);
-
     glViewport(0, 0, window_width, window_height);
 
     float vertices[] = {
@@ -102,10 +99,9 @@ int main()
         -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, //
         -1.0f, -1.0f, 0.0f, 0.0f, 1.0f //
     };
-
     unsigned int indices[] = { 1, 2, 3, 3, 0, 1 };
-
     unsigned int vao, vbo, ebo;
+
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
     glGenBuffers(1, &ebo);
@@ -135,20 +131,35 @@ int main()
     load_texture(ROOT_DIR "res/next.png", &next_texture);
     load_texture(ROOT_DIR "res/close.png", &close_texture);
 
+    std::random_device device;
+    std::mt19937 generator(device());
+    std::uniform_real_distribution<double> distribution(0, 1);
+
     std::vector<std::string> filelist;
     bool playing = false;
     static std::string input_path;
     static int base_timer = 30;
     double clock = base_timer;
 
-    while (!glfwWindowShouldClose(window)) {
+    // FIXME: way too dirty, wait for global refactoring ??
+    auto pick_image = [](std::uniform_real_distribution<double> * dist, std::mt19937 * gen, Texture * texture,
+        std::vector<std::string> * files) -> auto
+    {
+        // TODO: check for images
+        // -> black texture if trying to display something other than an image
+        // = display palceholder image (image not recognized, please open something else)
+        // FIXME: throws execption if clicking close (clearing the vector) at the same moment as this thing is
+        // picking a filename
+        glDeleteTextures(1, &texture->id);
+        return load_texture(files->at((int)((*dist)(*gen) * files->size())).c_str(), texture);
+    };
 
+    while (!glfwWindowShouldClose(window)) {
         // TODO: refactor timer management
+        // FIXME: Display does not update when image is moving but time is
         double start_time = glfwGetTime();
         if (playing && clock < 0) {
-            // change image
-            // take one random from filelist and load it, display, delete it from the list
-            std::cout << "timer" << std::endl;
+            pick_image(&distribution, &generator, &current_texture, &filelist);
             clock = base_timer;
         }
 
@@ -160,18 +171,21 @@ int main()
 
         if (filelist.empty()) {
             static std::vector<std::string> error_messages;
-            ImGui::Begin("files");
 
+            ImGui::Begin("files");
             // TODO: add multiple folder input
             // TODO: make enter key press "Ok" button
             ImGui::InputText("Folder path", &input_path);
-            // TODO: minimum 1
+            // TODO: minimum 1 sec
             ImGui::InputInt("Timer (sec)", &base_timer);
             if (ImGui::Button("Ok")) {
                 error_messages.clear();
                 filelist.clear();
                 bool has_error = false;
-                if (!std::filesystem::exists(input_path)) {
+                if (input_path.empty()) {
+                    error_messages.push_back("please insert a path to a directory");
+                    has_error = true;
+                } else if (!std::filesystem::exists(input_path)) {
                     error_messages.push_back(input_path + " not found");
                     has_error = true;
                 }
@@ -183,24 +197,9 @@ int main()
                     clock = base_timer;
                     for (const auto& file : std::filesystem::directory_iterator(input_path))
                         filelist.push_back(file.path().string());
+                    pick_image(&distribution, &generator, &current_texture, &filelist);
                 }
             }
-
-            for (const auto& filepath : filelist) {
-                if (ImGui::Button(filepath.c_str())) {
-                    // TODO: memory leak ???
-                    glDeleteTextures(1, &current_texture.id);
-                    // TODO: check for images
-                    // -> black texture if trying to display something other than an image
-                    // = display palceholder image (image not recognized, please open something
-                    // else)
-                    load_texture(filepath.c_str(), &current_texture);
-                }
-            }
-            if (current_texture.width && current_texture.height) {
-                ImGui::Text("%d, %d", current_texture.width, current_texture.height);
-            }
-
             for (const auto& err_msg : error_messages) {
                 // TODO: red text
                 ImGui::Text(err_msg.c_str());
@@ -208,11 +207,14 @@ int main()
             ImGui::End();
         } else {
             ImGui::Begin("Control panel");
+            // TODO: keyboad shortcuts
+            // TODO: change icon color to white, get rid of background
+            // TODO: bigger font size
             ImGui::Text(std::to_string((int)clock).c_str()); // better way ???
             ImGui::SameLine();
             // TODO: refactor. (with lambda ??)
             if (ImGui::ImageButton((ImTextureID)prev_texture.id, ImVec2(prev_texture.width, prev_texture.height))) {
-                // previous image
+                // TODO: remember previous images
             }
             ImGui::SameLine();
             if (!playing) {
@@ -227,14 +229,14 @@ int main()
             }
             ImGui::SameLine();
             if (ImGui::ImageButton((ImTextureID)next_texture.id, ImVec2(next_texture.width, next_texture.height))) {
-                // next image
+                pick_image(&distribution, &generator, &current_texture, &filelist);
+                clock = base_timer;
             }
             ImGui::SameLine();
             if (ImGui::ImageButton((ImTextureID)close_texture.id, ImVec2(close_texture.width, close_texture.height))) {
-                // back to selecting folders
                 filelist.clear();
+                playing = false;
             }
-
             ImGui::End();
         }
 

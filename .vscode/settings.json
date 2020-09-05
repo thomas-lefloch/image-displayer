@@ -40,6 +40,18 @@
     "sstream": "cpp",
     "string": "cpp",
     "filesystem": "cpp",
-    "vector": "cpp"
+    "vector": "cpp",
+    "random": "cpp",
+    "algorithm": "cpp",
+    "chrono": "cpp",
+    "ctime": "cpp",
+    "iomanip": "cpp",
+    "list": "cpp",
+    "locale": "cpp",
+    "ratio": "cpp",
+    "xlocbuf": "cpp",
+    "xlocmes": "cpp",
+    "xlocmon": "cpp",
+    "xloctime": "cpp"
   }
 }

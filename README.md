@@ -2,7 +2,7 @@
 Displays random images from selected directories during a selected time
 
 ## State
-Work in progress. not usable
+Work in progress. usable but still need some major feature (previous, selecting multiple folders, ...) and some QOL improvements
 
 ## Todo / features
 * select images from multiple folder
