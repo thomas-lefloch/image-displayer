@@ -14,6 +14,7 @@
 #include <random>
 
 #include "shader.hpp"
+#include "gui.hpp"
 
 constexpr int window_width = 1600;
 constexpr int window_height = 900;
@@ -136,10 +137,10 @@ int main()
     std::uniform_real_distribution<double> distribution(0, 1);
 
     std::vector<std::string> filelist;
-    bool playing = false;
-    static std::string input_path;
+    bool playing = true;
+    static std::string input_path = "";
     static int base_timer = 30;
-    double clock = base_timer;
+    double time_left = base_timer;
 
     // FIXME: way too dirty, wait for global refactoring ??
     auto pick_image = [](std::uniform_real_distribution<double> * dist, std::mt19937 * gen, Texture * texture,
@@ -158,9 +159,9 @@ int main()
         // TODO: refactor timer management
         // FIXME: Display does not update when image is moving but time is
         double start_time = glfwGetTime();
-        if (playing && clock < 0) {
+        if (playing && time_left < 0) {
             pick_image(&distribution, &generator, &current_texture, &filelist);
-            clock = base_timer;
+            time_left = base_timer;
         }
 
         glfwPollEvents();
@@ -170,74 +171,16 @@ int main()
         ImGui::NewFrame();
 
         if (filelist.empty()) {
-            static std::vector<std::string> error_messages;
-
-            ImGui::Begin("files");
-            // TODO: add multiple folder input
-            // TODO: make enter key press "Ok" button
-            ImGui::InputText("Folder path", &input_path);
-            // TODO: minimum 1 sec
-            ImGui::InputInt("Timer (sec)", &base_timer);
-            if (ImGui::Button("Ok")) {
-                error_messages.clear();
+            // TODO: make input_dialog return valid path and timer instead of a bool
+            if (input_dialog(&input_path, &base_timer)) {
                 filelist.clear();
-                bool has_error = false;
-                if (input_path.empty()) {
-                    error_messages.push_back("please insert a path to a directory");
-                    has_error = true;
-                } else if (!std::filesystem::exists(input_path)) {
-                    error_messages.push_back(input_path + " not found");
-                    has_error = true;
-                }
-                if (base_timer < 1) {
-                    error_messages.push_back("timer must be > 1 sec");
-                    has_error = true;
-                }
-                if (!has_error) {
-                    clock = base_timer;
-                    for (const auto& file : std::filesystem::directory_iterator(input_path))
-                        filelist.push_back(file.path().string());
-                    pick_image(&distribution, &generator, &current_texture, &filelist);
-                }
-            }
-            for (const auto& err_msg : error_messages) {
-                // TODO: red text
-                ImGui::Text(err_msg.c_str());
-            }
-            ImGui::End();
-        } else {
-            ImGui::Begin("Control panel");
-            // TODO: keyboad shortcuts
-            // TODO: change icon color to white, get rid of background
-            // TODO: bigger font size
-            ImGui::Text(std::to_string((int)clock).c_str()); // better way ???
-            ImGui::SameLine();
-            // TODO: refactor. (with lambda ??)
-            if (ImGui::ImageButton((ImTextureID)prev_texture.id, ImVec2(prev_texture.width, prev_texture.height))) {
-                // TODO: remember previous images
-            }
-            ImGui::SameLine();
-            if (!playing) {
-                if (ImGui::ImageButton((ImTextureID)play_texture.id, ImVec2(play_texture.width, play_texture.height))) {
-                    playing = true;
-                }
-            } else {
-                if (ImGui::ImageButton(
-                        (ImTextureID)pause_texture.id, ImVec2(pause_texture.width, pause_texture.height))) {
-                    playing = false;
-                }
-            }
-            ImGui::SameLine();
-            if (ImGui::ImageButton((ImTextureID)next_texture.id, ImVec2(next_texture.width, next_texture.height))) {
+                time_left = base_timer;
+                for (const auto& file : std::filesystem::directory_iterator(input_path))
+                    filelist.push_back(file.path().string());
                 pick_image(&distribution, &generator, &current_texture, &filelist);
-                clock = base_timer;
             }
-            ImGui::SameLine();
-            if (ImGui::ImageButton((ImTextureID)close_texture.id, ImVec2(close_texture.width, close_texture.height))) {
-                filelist.clear();
-                playing = false;
-            }
-            ImGui::End();
+        } else {
+            control_panel(time_left);
         }
 
         ImGui::Render();
@@ -269,7 +212,7 @@ int main()
 
         glfwSwapBuffers(window);
         // TODO: refactor timer management
-        if (playing) clock -= glfwGetTime() - start_time;
+        if (playing) time_left -= glfwGetTime() - start_time;
     }
 
     ImGui_ImplOpenGL3_Shutdown();
