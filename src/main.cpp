@@ -15,51 +15,12 @@
 
 #include "shader.hpp"
 #include "gui.hpp"
+#include "texture.hpp"
 
 constexpr int window_width = 1600;
 constexpr int window_height = 900;
 
 ImVec4 clear_color = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
-
-struct Texture {
-    GLuint id = 0;
-    int width = 0;
-    int height = 0;
-};
-
-// Simple helper function to load an image into a OpenGL texture with common settings
-bool load_texture(const char* filename, Texture* out_texture)
-{
-    // Load from file
-    int image_width = 0;
-    int image_height = 0;
-    unsigned char* image_data = stbi_load(filename, &image_width, &image_height, NULL, 4);
-    if (image_data == NULL) return false;
-
-    // Create a OpenGL texture identifier
-    GLuint image_texture;
-    glGenTextures(1, &image_texture);
-    glBindTexture(GL_TEXTURE_2D, image_texture);
-
-    // Setup filtering parameters for display
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // set texture wrapping to GL_REPEAT (default wrapping method)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    // Upload pixels into texture
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
-    stbi_image_free(image_data);
-
-    out_texture->id = image_texture;
-    out_texture->width = image_width;
-    out_texture->height = image_height;
-
-    return true;
-}
 
 int main()
 {
@@ -125,19 +86,12 @@ int main()
 
     int img_ratio_uniform = glGetUniformLocation(shader_id, "img_ratio");
 
-    Texture current_texture, play_texture, pause_texture, prev_texture, next_texture, close_texture;
-    load_texture(ROOT_DIR "res/play.png", &play_texture);
-    load_texture(ROOT_DIR "res/pause.png", &pause_texture);
-    load_texture(ROOT_DIR "res/prev.png", &prev_texture);
-    load_texture(ROOT_DIR "res/next.png", &next_texture);
-    load_texture(ROOT_DIR "res/close.png", &close_texture);
-
     std::random_device device;
     std::mt19937 generator(device());
     std::uniform_real_distribution<double> distribution(0, 1);
 
     std::vector<std::string> filelist;
-    bool playing = true;
+    bool playing = false;
     static std::string input_path = "";
     static int base_timer = 30;
     double time_left = base_timer;
@@ -149,14 +103,13 @@ int main()
         // TODO: check for images
         // -> black texture if trying to display something other than an image
         // = display palceholder image (image not recognized, please open something else)
-        // FIXME: throws execption if clicking close (clearing the vector) at the same moment as this thing is
-        // picking a filename
+        // FIXME: throws execption if clicking close (clearing the vector) at the same moment as picking a filename
         glDeleteTextures(1, &texture->id);
-        return load_texture(files->at((int)((*dist)(*gen) * files->size())).c_str(), texture);
+        return Texture::load_from_file(files->at((int)((*dist)(*gen) * files->size())).c_str(), texture);
     };
 
     while (!glfwWindowShouldClose(window)) {
-        // TODO: refactor timer management
+
         // FIXME: Display does not update when image is moving but time is
         double start_time = glfwGetTime();
         if (playing && time_left < 0) {
@@ -171,16 +124,33 @@ int main()
         ImGui::NewFrame();
 
         if (filelist.empty()) {
-            // TODO: make input_dialog return valid path and timer instead of a bool
+            // TODO: make input_dialog return valid path and timer instead of passing them by ref
             if (input_dialog(&input_path, &base_timer)) {
-                filelist.clear();
                 time_left = base_timer;
                 for (const auto& file : std::filesystem::directory_iterator(input_path))
                     filelist.push_back(file.path().string());
                 pick_image(&distribution, &generator, &current_texture, &filelist);
             }
         } else {
-            control_panel(time_left);
+            switch (control_panel(time_left, playing)) {
+            case CP_ACTION::PLAY_PAUSE:
+                playing = !playing;
+                break;
+            case CP_ACTION::PREVIOUS:
+                break; // TODO: implement that
+            case CP_ACTION::NEXT:
+                pick_image(&distribution, &generator, &current_texture, &filelist);
+                time_left = base_timer;
+                break;
+            case CP_ACTION::ABORT:
+                filelist.clear();
+                playing = false;
+                break;
+            case CP_ACTION::NOOP:
+                break;
+            default:
+                break;
+            };
         }
 
         ImGui::Render();
@@ -211,7 +181,7 @@ int main()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
-        // TODO: refactor timer management
+
         if (playing) time_left -= glfwGetTime() - start_time;
     }
 
