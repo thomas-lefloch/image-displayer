@@ -14,6 +14,7 @@ Work in progress. usable but still need some major feature (previous, selecting 
 * Save image display order (session) into file
 * Replay sessions
 * Keyboard Shorcuts
+* Save preferences (session files, what folders to load) 
 
 ## Maybe feature ? (no particular order)
 * rotate image

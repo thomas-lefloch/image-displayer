@@ -112,9 +112,9 @@ int main()
         // TODO: determine what to do if texture is not loaded ??
         if (!image_loaded) return false;
 
-        // TODO : manage errors
+        // TODO: manage errors
         std::ofstream file_out;
-        // TODO: generate unique filename
+        // TODO: generate unique filename. base on time maybe ?
         // TODO: choose "session" file location
         file_out.open(ROOT_DIR "session.txt", std::ios_base::app);
         file_out << selected_file << "\n";
@@ -124,8 +124,6 @@ int main()
     };
 
     while (!glfwWindowShouldClose(window)) {
-
-        // FIXME: Display does not update when image is moving but time is
         double start_time = glfwGetTime();
         if (playing && time_left < 0) {
             pick_image(&distribution, &generator, &current_image, &filelist);
@@ -142,6 +140,7 @@ int main()
             // TODO: make input_dialog return valid path and timer instead of passing them by ref
             if (Gui::input_dialog(&input_path, &base_timer)) {
                 time_left = base_timer;
+                // TODO: check for input_path validity (does folder exist ? is it a file ?)
                 for (const auto& file : std::filesystem::directory_iterator(input_path))
                     filelist.push_back(file.path().string());
                 pick_image(&distribution, &generator, &current_image, &filelist);
