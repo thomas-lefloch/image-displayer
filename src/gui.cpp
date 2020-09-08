@@ -21,11 +21,9 @@ bool Gui::input_dialog(std::string* selected_path, int* timer)
     static std::vector<std::string> error_messages;
     bool form_validated = false;
     ImGui::Begin("files");
-    // TODO: add multiple folder input
-    // TODO: make enter key press "Ok" button
     ImGui::InputText("Folder path", selected_path);
     ImGui::InputInt("Timer (sec)", timer);
-    if (ImGui::Button("Ok")) {
+    if (ImGui::Button("Ok")) { // TODO: make enter key press "Ok" button
         form_validated = true;
         error_messages.clear();
         if (selected_path->empty())
@@ -45,13 +43,12 @@ Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing)
 {
     Gui::CP_ACTION action = Gui::CP_ACTION::NOOP;
     ImGui::Begin("Control panel");
-    // TODO: keyboad shortcuts
-    // TODO: change icon color to white, get rid of background
+
     // TODO: bigger font size
     ImGui::Text(std::to_string(time_left).c_str()); // better way ???
     ImGui::SameLine();
+    // TODO: get rid of icon background
     const auto icon = [](Texture* t) { return ImGui::ImageButton((ImTextureID)t->id, ImVec2(t->width, t->height)); };
-    // const auto icon = [](const char* s) { return ImGui::Button(s); };
     if (icon(&prev_texture)) action = Gui::CP_ACTION::PREVIOUS;
     ImGui::SameLine();
     if (!playing) {

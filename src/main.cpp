@@ -98,7 +98,6 @@ int main()
     static int base_timer = 30;
     double time_left = base_timer;
 
-    // FIXME: way too dirty, wait for global refactoring ??
     auto pick_image = [](std::uniform_real_distribution<double> * dist, std::mt19937 * gen, Texture * texture,
         std::vector<std::string> * files) -> auto
     {
