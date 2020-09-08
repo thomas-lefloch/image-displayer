@@ -15,7 +15,6 @@
 
 #include "shader.hpp"
 #include "gui.hpp"
-#include "texture.hpp"
 
 constexpr int window_width = 1600;
 constexpr int window_height = 900;
@@ -90,6 +89,9 @@ int main()
     std::mt19937 generator(device());
     std::uniform_real_distribution<double> distribution(0, 1);
 
+    Gui::init_texture();
+
+    Texture current_image;
     std::vector<std::string> filelist;
     bool playing = false;
     static std::string input_path = "";
@@ -113,7 +115,7 @@ int main()
         // FIXME: Display does not update when image is moving but time is
         double start_time = glfwGetTime();
         if (playing && time_left < 0) {
-            pick_image(&distribution, &generator, &current_texture, &filelist);
+            pick_image(&distribution, &generator, &current_image, &filelist);
             time_left = base_timer;
         }
 
@@ -125,28 +127,28 @@ int main()
 
         if (filelist.empty()) {
             // TODO: make input_dialog return valid path and timer instead of passing them by ref
-            if (input_dialog(&input_path, &base_timer)) {
+            if (Gui::input_dialog(&input_path, &base_timer)) {
                 time_left = base_timer;
                 for (const auto& file : std::filesystem::directory_iterator(input_path))
                     filelist.push_back(file.path().string());
-                pick_image(&distribution, &generator, &current_texture, &filelist);
+                pick_image(&distribution, &generator, &current_image, &filelist);
             }
         } else {
-            switch (control_panel(time_left, playing)) {
-            case CP_ACTION::PLAY_PAUSE:
+            switch (Gui::control_panel(time_left, playing)) {
+            case Gui::CP_ACTION::PLAY_PAUSE:
                 playing = !playing;
                 break;
-            case CP_ACTION::PREVIOUS:
+            case Gui::CP_ACTION::PREVIOUS:
                 break; // TODO: implement that
-            case CP_ACTION::NEXT:
-                pick_image(&distribution, &generator, &current_texture, &filelist);
+            case Gui::CP_ACTION::NEXT:
+                pick_image(&distribution, &generator, &current_image, &filelist);
                 time_left = base_timer;
                 break;
-            case CP_ACTION::ABORT:
+            case Gui::CP_ACTION::ABORT:
                 filelist.clear();
                 playing = false;
                 break;
-            case CP_ACTION::NOOP:
+            case Gui::CP_ACTION::NOOP:
                 break;
             default:
                 break;
@@ -160,13 +162,13 @@ int main()
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (current_texture.id) {
-            glBindTexture(GL_TEXTURE_2D, current_texture.id);
+        if (current_image.id) {
+            glBindTexture(GL_TEXTURE_2D, current_image.id);
             glUseProgram(shader_id);
             glBindVertexArray(vao);
             // probably exist a better solution to make the image fit the window
             float img_ratio[2] = { //
-                (float)current_texture.width / (float)window_width, (float)current_texture.height / (float)window_height
+                (float)current_image.width / (float)window_width, (float)current_image.height / (float)window_height
             };
             if (img_ratio[0] < img_ratio[1]) {
                 img_ratio[0] = img_ratio[0] / img_ratio[1];

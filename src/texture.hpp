@@ -42,5 +42,3 @@ struct Texture {
         return true;
     }
 };
-
-static Texture current_texture, play_texture, pause_texture, prev_texture, next_texture, close_texture;
