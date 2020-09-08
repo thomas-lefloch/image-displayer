@@ -7,6 +7,7 @@
 #include "imgui_stdlib.h"
 
 #include <iostream>
+#include <fstream>
 #include <math.h>
 #include <stdio.h>
 #include <helpers/RootDir.h>
@@ -106,7 +107,20 @@ int main()
         // = display palceholder image (image not recognized, please open something else)
         // FIXME: throws execption if clicking close (clearing the vector) at the same moment as picking a filename
         glDeleteTextures(1, &texture->id);
-        return Texture::load_from_file(files->at((int)((*dist)(*gen) * files->size())).c_str(), texture);
+        const auto selected_file = files->at((int)((*dist)(*gen) * files->size()));
+        bool image_loaded = Texture::load_from_file(selected_file.c_str(), texture);
+        // TODO: determine what to do if texture is not loaded ??
+        if (!image_loaded) return false;
+
+        // TODO : manage errors
+        std::ofstream file_out;
+        // TODO: generate unique filename
+        // TODO: choose "session" file location
+        file_out.open(ROOT_DIR "session.txt", std::ios_base::app);
+        file_out << selected_file << "\n";
+        file_out.close();
+
+        return true;
     };
 
     while (!glfwWindowShouldClose(window)) {
