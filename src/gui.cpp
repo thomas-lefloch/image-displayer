@@ -7,15 +7,6 @@
 
 #include "gui.hpp"
 
-void Gui::init_texture()
-{
-    Texture::load_from_file(ROOT_DIR "res/play.png", &play_texture);
-    Texture::load_from_file(ROOT_DIR "res/pause.png", &pause_texture);
-    Texture::load_from_file(ROOT_DIR "res/prev.png", &prev_texture);
-    Texture::load_from_file(ROOT_DIR "res/next.png", &next_texture);
-    Texture::load_from_file(ROOT_DIR "res/close.png", &close_texture);
-}
-
 bool Gui::input_dialog(std::string* selected_path, int* timer)
 {
     static std::vector<std::string> error_messages;
@@ -44,22 +35,15 @@ Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing)
     Gui::CP_ACTION action = Gui::CP_ACTION::NOOP;
     ImGui::Begin("Control panel");
 
-    // TODO: bigger font size
-    ImGui::Text(std::to_string(time_left).c_str()); // better way ???
-    ImGui::SameLine();
-    // TODO: get rid of icon background
-    const auto icon = [](Texture* t) { return ImGui::ImageButton((ImTextureID)t->id, ImVec2(t->width, t->height)); };
-    if (icon(&prev_texture)) action = Gui::CP_ACTION::PREVIOUS;
-    ImGui::SameLine();
+    ImGui::Text(std::to_string(time_left).c_str()); // better way ??? // TODO: bigger font size
+    if (ImGui::Button("Previous")) action = Gui::CP_ACTION::PREVIOUS;
     if (!playing) {
-        if (icon(&play_texture)) action = Gui::CP_ACTION::PLAY_PAUSE;
+        if (ImGui::Button("Play")) action = Gui::CP_ACTION::PLAY_PAUSE;
     } else {
-        if (icon(&pause_texture)) action = Gui::CP_ACTION::PLAY_PAUSE;
+        if (ImGui::Button("Pause")) action = Gui::CP_ACTION::PLAY_PAUSE;
     }
-    ImGui::SameLine();
-    if (icon(&next_texture)) action = Gui::CP_ACTION::NEXT;
-    ImGui::SameLine();
-    if (icon(&close_texture)) action = Gui::CP_ACTION::ABORT;
+    if (ImGui::Button("Next")) action = Gui::CP_ACTION::NEXT;
+    if (ImGui::Button("Close")) action = Gui::CP_ACTION::CLOSE;
     ImGui::End();
     return action;
 }
