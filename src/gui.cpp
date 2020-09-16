@@ -14,8 +14,8 @@ bool Gui::input_dialog(UserInput* inputs)
     ImGui::Begin("files");
     ImGui::InputText("Images folder", &inputs->images_folder);
     ImGui::InputInt("Timer (sec)", &inputs->timer);
-    ImGui::InputText("Session folder", &inputs->session_folder);
-    if (ImGui::Button("Ok")) { // TODO: make enter key press "Ok" button
+    ImGui::InputText("Session folder", &inputs->session_folder); // TODO: support filename
+    if (ImGui::Button("Ok")) {
         form_validated = true;
         error_messages.clear();
 
@@ -44,7 +44,7 @@ Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing)
     Gui::CP_ACTION action = Gui::CP_ACTION::NOOP;
     ImGui::Begin("Control panel");
 
-    ImGui::Text(std::to_string(time_left).c_str()); // better way ??? // TODO: bigger font size
+    ImGui::Text(std::to_string(time_left).c_str()); // better way ???
     if (ImGui::Button("Previous")) action = Gui::CP_ACTION::PREVIOUS;
     if (!playing) {
         if (ImGui::Button("Play")) action = Gui::CP_ACTION::PLAY_PAUSE;

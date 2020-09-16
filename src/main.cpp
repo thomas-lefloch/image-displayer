@@ -107,10 +107,7 @@ int main()
 
     auto next_image = [](std::uniform_real_distribution<double> * dist, std::mt19937 * gen, State * s) -> auto
     {
-        // TODO: check for images
-        // -> black texture if trying to display something other than an image
-        // = display palceholder image (image not recognized, please open something else)
-        // FIXME: throws execption if clicking close (clearing the vector) at the same moment as picking a filename
+        // FIXME: throws execption if clicking close (clearing the file list) at the same moment as picking a filename
         glDeleteTextures(1, &s->current_texture.id);
         const auto selected_file = s->selected_files.at((int)((*dist)(*gen) * s->selected_files.size()));
         // TODO: determine what to do if texture is not loaded ??
@@ -149,16 +146,6 @@ int main()
                 state.time_left = user_input.timer;
                 break;
             case Gui::CP_ACTION::CLOSE: {
-                // saving session
-                std::ofstream file_out;
-                // TODO: manage errors
-                // TODO: generate unique filename. base on time maybe ?
-                // TODO: choose "session" file location
-                // TODO: write file when image is changing
-                file_out.open(ROOT_DIR "session.txt", std::ios_base::app);
-                for (auto& filepath : state.displayed_images)
-                    file_out << filepath << "\n";
-                file_out.close();
                 // clearing state
                 state.selected_files.clear();
                 state.displayed_images.clear();
