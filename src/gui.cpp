@@ -7,21 +7,30 @@
 
 #include "gui.hpp"
 
-bool Gui::input_dialog(std::string* selected_path, int* timer)
+bool Gui::input_dialog(UserInput* inputs)
 {
     static std::vector<std::string> error_messages;
     bool form_validated = false;
     ImGui::Begin("files");
-    ImGui::InputText("Folder path", selected_path);
-    ImGui::InputInt("Timer (sec)", timer);
+    ImGui::InputText("Images folder", &inputs->images_folder);
+    ImGui::InputInt("Timer (sec)", &inputs->timer);
+    ImGui::InputText("Session folder", &inputs->session_folder);
     if (ImGui::Button("Ok")) { // TODO: make enter key press "Ok" button
         form_validated = true;
         error_messages.clear();
-        if (selected_path->empty())
-            error_messages.push_back("please insert a path to a directory");
-        else if (!std::filesystem::exists(*selected_path))
-            error_messages.push_back((*selected_path) + " not found");
-        if (*timer < 1) error_messages.push_back("timer must be > 1 sec");
+
+        // images_folder errors
+        if (inputs->images_folder.empty())
+            error_messages.push_back("Images folder :: please insert a path to a directory");
+        else if (!std::filesystem::is_directory(inputs->images_folder))
+            error_messages.push_back(inputs->images_folder + " not found or is not a directory");
+        // timer errors
+        if (inputs->timer < 1) error_messages.push_back("timer must be > 1 sec");
+        // session_folder errors
+        if (inputs->session_folder.empty())
+            error_messages.push_back("Session Folder :: please insert a path to a directory");
+        else if (!std::filesystem::is_directory(inputs->session_folder))
+            error_messages.push_back(inputs->session_folder + " not found or is not a directory");
     }
     for (const auto& err_msg : error_messages)
         ImGui::Text(err_msg.c_str()); // TODO: red text

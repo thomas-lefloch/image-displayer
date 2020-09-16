@@ -9,12 +9,15 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <time.h>
 #include <stdio.h>
 #include <helpers/RootDir.h>
 #include <filesystem>
 #include <random>
 
 #include "shader.hpp"
+#include "user_input.hpp"
+#include "texture.hpp"
 #include "gui.hpp"
 
 constexpr int window_width = 1600;
@@ -90,15 +93,11 @@ int main()
     std::mt19937 generator(device());
     std::uniform_real_distribution<double> distribution(0, 1);
 
-    struct UserInput {
-        std::string folder = "";
-        int timer = 30;
-    };
-
     struct State {
         Texture current_texture;
         std::vector<std::string> selected_files;
         std::vector<std::string> displayed_images;
+        std::string session_filename;
         bool playing = false;
         double time_left;
     };
@@ -132,11 +131,9 @@ int main()
         ImGui::NewFrame();
 
         if (state.selected_files.empty()) {
-            // TODO: make input_dialog return valid path and timer instead of passing them by ref
-            if (Gui::input_dialog(&user_input.folder, &user_input.timer)) {
+            if (Gui::input_dialog(&user_input)) {
                 state.time_left = user_input.timer;
-                // TODO: check for input_path validity (does folder exist ? is it a file ?)
-                for (const auto& file : std::filesystem::directory_iterator(user_input.folder))
+                for (const auto& file : std::filesystem::directory_iterator(user_input.images_folder))
                     state.selected_files.push_back(file.path().string());
                 next_image(&distribution, &generator, &state);
             }
@@ -158,7 +155,7 @@ int main()
                 // TODO: generate unique filename. base on time maybe ?
                 // TODO: choose "session" file location
                 // TODO: write file when image is changing
-                file_out.open(ROOT_DIR, std::ios_base::app);
+                file_out.open(ROOT_DIR "session.txt", std::ios_base::app);
                 for (auto& filepath : state.displayed_images)
                     file_out << filepath << "\n";
                 file_out.close();
