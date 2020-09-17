@@ -98,6 +98,7 @@ int main()
         UserInput user_input;
         std::vector<std::string> selected_files;
         std::vector<std::string> displayed_images;
+        int current_image_idx = 0;
         std::string session_filepath;
         bool playing = false;
         double time_left;
@@ -109,12 +110,24 @@ int main()
     {
         // FIXME: throws execption if clicking close (clearing the file list) at the same moment as picking a filename
         glDeleteTextures(1, &s->current_texture.id);
-        const auto selected_filepath = s->selected_files.at((int)((*dist)(*gen) * s->selected_files.size()));
-        // TODO: determine what to do if texture is not loaded ??
+
+        std::string selected_filepath;
+        bool new_image = false;
+        int max_index = s->displayed_images.size() - 1; // ¯\_(ツ)_/¯ bugged when inlining into if statement
+        if (s->current_image_idx < max_index) {
+            selected_filepath = s->displayed_images[++s->current_image_idx];
+        } else {
+            selected_filepath = s->selected_files.at((int)((*dist)(*gen) * s->selected_files.size()));
+            new_image = true;
+        }
         bool image_loaded = Texture::load_from_file(selected_filepath.c_str(), &s->current_texture);
-        if (!image_loaded)
+
+        if (!image_loaded) {
             return false;
-        else {
+        } else if (new_image) {
+            s->displayed_images.push_back(selected_filepath);
+            s->current_image_idx = s->displayed_images.size() - 1;
+            // saving filename into session
             std::ofstream save_file;
             while (s->session_filepath.empty()) { // apparently windows automatically translate "/" to "\\"
                 const auto timestamp = std::chrono::system_clock::now().time_since_epoch().count();
@@ -129,7 +142,8 @@ int main()
             save_file << selected_filepath << "\n";
             save_file.close();
             return true;
-        }
+        } else
+            return true; // nothing to do anymore image already loaded
     };
 
     while (!glfwWindowShouldClose(window)) {
@@ -158,6 +172,12 @@ int main()
                 state.playing = !state.playing;
                 break;
             case Gui::CP_ACTION::PREVIOUS: // TODO: implement
+                if (state.current_image_idx > 0) {
+                    state.time_left = state.user_input.timer;
+                    glDeleteTextures(1, &state.current_texture.id);
+                    Texture::load_from_file(
+                        state.displayed_images[--state.current_image_idx].c_str(), &state.current_texture);
+                }
                 break;
             case Gui::CP_ACTION::NEXT:
                 next_image(&distribution, &generator, &state);

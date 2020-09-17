@@ -6,17 +6,21 @@ Work in progress. usable but still need some major feature (previous, selecting 
 
 ## TODO 
 * Put icon on control pannel
-* Implement previous button
+* list all available features under Done section
 * see "// TODO:" comment for more
 
-## Coming features (no particular order)
+## features
+
+### Done
+* Save image display order (session) into file -> DONE
+
+### Coming features (no particular order)
 * Select images from multiple folder
-* Save image display order (session) into file
 * Replay sessions
 * Keyboard Shorcuts
 * Save preferences (session files, what folders to load) 
 
-## Maybe feature ? (no particular order)
+### Maybe feature ? (no particular order)
 * rotate image
 * zoom in/out
 * draw over image ????
