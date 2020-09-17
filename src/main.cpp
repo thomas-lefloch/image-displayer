@@ -95,30 +95,48 @@ int main()
 
     struct State {
         Texture current_texture;
+        UserInput user_input;
         std::vector<std::string> selected_files;
         std::vector<std::string> displayed_images;
-        std::string session_filename;
+        std::string session_filepath;
         bool playing = false;
         double time_left;
     };
 
-    UserInput user_input;
     State state;
 
     auto next_image = [](std::uniform_real_distribution<double> * dist, std::mt19937 * gen, State * s) -> auto
     {
         // FIXME: throws execption if clicking close (clearing the file list) at the same moment as picking a filename
         glDeleteTextures(1, &s->current_texture.id);
-        const auto selected_file = s->selected_files.at((int)((*dist)(*gen) * s->selected_files.size()));
+        const auto selected_filepath = s->selected_files.at((int)((*dist)(*gen) * s->selected_files.size()));
         // TODO: determine what to do if texture is not loaded ??
-        return Texture::load_from_file(selected_file.c_str(), &s->current_texture);
+        bool image_loaded = Texture::load_from_file(selected_filepath.c_str(), &s->current_texture);
+        if (!image_loaded)
+            return false;
+        else {
+            std::ofstream save_file;
+            while (s->session_filepath.empty()) { // apparently windows automatically translate "/" to "\\"
+                const auto timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+                const auto filepath = s->user_input.session_folder + "/" + std::to_string(timestamp) + ".txt";
+                if (!std::filesystem::exists(filepath)) s->session_filepath = filepath;
+                // opening save_file two times  beacause i don"t know how to check if file is empty with ofstream
+                save_file.open(s->session_filepath, std::ios::app);
+                save_file << std::to_string(s->user_input.timer) + "\n"; // first line of the session file is the timer
+                save_file.close();
+            }
+            save_file.open(s->session_filepath, std::ios::app);
+            save_file << selected_filepath << "\n";
+            save_file.close();
+            return true;
+        }
     };
 
     while (!glfwWindowShouldClose(window)) {
         double start_time = glfwGetTime();
         if (state.playing && state.time_left < 0) {
             next_image(&distribution, &generator, &state);
-            state.time_left = user_input.timer;
+            state.time_left = state.user_input.timer;
         }
 
         glfwPollEvents();
@@ -128,9 +146,9 @@ int main()
         ImGui::NewFrame();
 
         if (state.selected_files.empty()) {
-            if (Gui::input_dialog(&user_input)) {
-                state.time_left = user_input.timer;
-                for (const auto& file : std::filesystem::directory_iterator(user_input.images_folder))
+            if (Gui::input_dialog(&state.user_input)) {
+                state.time_left = state.user_input.timer;
+                for (const auto& file : std::filesystem::directory_iterator(state.user_input.images_folder))
                     state.selected_files.push_back(file.path().string());
                 next_image(&distribution, &generator, &state);
             }
@@ -143,10 +161,9 @@ int main()
                 break;
             case Gui::CP_ACTION::NEXT:
                 next_image(&distribution, &generator, &state);
-                state.time_left = user_input.timer;
+                state.time_left = state.user_input.timer;
                 break;
             case Gui::CP_ACTION::CLOSE: {
-                // clearing state
                 state.selected_files.clear();
                 state.displayed_images.clear();
                 state.playing = false;

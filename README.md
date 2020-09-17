@@ -5,8 +5,8 @@ Displays random images from selected directories during a selected time
 Work in progress. usable but still need some major feature (previous, selecting multiple folders, ...) and some QOL improvements
 
 ## TODO 
-* Change icons
-* Implement previous control
+* Put icon on control pannel
+* Implement previous button
 * see "// TODO:" comment for more
 
 ## Coming features (no particular order)
