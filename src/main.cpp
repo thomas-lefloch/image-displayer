@@ -19,6 +19,7 @@
 #include "user_input.hpp"
 #include "texture.hpp"
 #include "gui.hpp"
+#include "session.hpp"
 
 constexpr int window_width = 1600;
 constexpr int window_height = 900;
@@ -27,6 +28,9 @@ ImVec4 clear_color = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 
 int main()
 {
+
+    Session::is_file_format_valid("C:\\Users\\thomas\\Documents\\_dessin\\poses\\sessions\\16004222866531213.txt");
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -122,18 +126,17 @@ int main()
         }
         bool image_loaded = Texture::load_from_file(selected_filepath.c_str(), &s->current_texture);
 
-        if (!image_loaded) {
-            return false;
-        } else if (new_image) {
+        if (image_loaded && new_image) {
             s->displayed_images.push_back(selected_filepath);
             s->current_image_idx = s->displayed_images.size() - 1;
             // saving filename into session
             std::ofstream save_file;
-            while (s->session_filepath.empty()) { // apparently windows automatically translate "/" to "\\"
+            while (s->session_filepath.empty()) {
                 const auto timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+                // windows automatically translate "/" to "\\"
                 const auto filepath = s->user_input.session_folder + "/" + std::to_string(timestamp) + ".txt";
                 if (!std::filesystem::exists(filepath)) s->session_filepath = filepath;
-                // opening save_file two times  beacause i don"t know how to check if file is empty with ofstream
+                // opening save_file two times beacause i don't know how to check if file is empty with ofstream
                 save_file.open(s->session_filepath, std::ios::app);
                 save_file << std::to_string(s->user_input.timer) + "\n"; // first line of the session file is the timer
                 save_file.close();
@@ -141,9 +144,8 @@ int main()
             save_file.open(s->session_filepath, std::ios::app);
             save_file << selected_filepath << "\n";
             save_file.close();
-            return true;
-        } else
-            return true; // nothing to do anymore image already loaded
+        }
+        return image_loaded;
     };
 
     while (!glfwWindowShouldClose(window)) {
@@ -160,18 +162,25 @@ int main()
         ImGui::NewFrame();
 
         if (state.selected_files.empty()) {
-            if (Gui::input_dialog(&state.user_input)) {
+            switch (Gui::input_dialog(&state.user_input)) {
+            case Gui::INPUT_ACTION::NEW_SESSION:
                 state.time_left = state.user_input.timer;
                 for (const auto& file : std::filesystem::directory_iterator(state.user_input.images_folder))
                     state.selected_files.push_back(file.path().string());
                 next_image(&distribution, &generator, &state);
+                break;
+            case Gui::INPUT_ACTION::REPLAY_SESSION:
+                // parse file, set timer, set state.displayed_images to all images in file
+                break;
+            case Gui::INPUT_ACTION::NO_ACTION:
+                break;
             }
         } else {
             switch (Gui::control_panel(state.time_left, state.playing)) {
             case Gui::CP_ACTION::PLAY_PAUSE:
                 state.playing = !state.playing;
                 break;
-            case Gui::CP_ACTION::PREVIOUS: // TODO: implement
+            case Gui::CP_ACTION::PREVIOUS:
                 if (state.current_image_idx > 0) {
                     state.time_left = state.user_input.timer;
                     glDeleteTextures(1, &state.current_texture.id);

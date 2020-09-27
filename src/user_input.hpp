@@ -8,4 +8,5 @@ struct UserInput {
     std::string images_folder = "";
     int timer = 30;
     std::string session_folder = "";
+    std::string session_replay_file = "";
 };

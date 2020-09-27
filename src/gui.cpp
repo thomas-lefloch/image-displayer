@@ -4,21 +4,22 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_stdlib.h"
+#include <regex>
 
 #include "gui.hpp"
 
-bool Gui::input_dialog(UserInput* inputs)
+Gui::INPUT_ACTION Gui::input_dialog(UserInput* inputs)
 {
     static std::vector<std::string> error_messages;
-    bool form_validated = false;
+    Gui::INPUT_ACTION user_action = Gui::INPUT_ACTION::NO_ACTION;
+
     ImGui::Begin("files");
     ImGui::InputText("Images folder", &inputs->images_folder);
     ImGui::InputInt("Timer (sec)", &inputs->timer);
     ImGui::InputText("Session folder", &inputs->session_folder); // TODO: support filename
     if (ImGui::Button("Ok")) {
-        form_validated = true;
         error_messages.clear();
-
+        user_action = Gui::INPUT_ACTION::NEW_SESSION;
         // images_folder errors
         if (inputs->images_folder.empty())
             error_messages.push_back("Images folder :: please insert a path to a directory");
@@ -32,11 +33,23 @@ bool Gui::input_dialog(UserInput* inputs)
         else if (!std::filesystem::is_directory(inputs->session_folder))
             error_messages.push_back(inputs->session_folder + " not found or is not a directory");
     }
+
+    ImGui::InputText("Session File", &inputs->session_replay_file);
+    if (ImGui::Button("Replay session")) {
+        error_messages.clear();
+        user_action = Gui::INPUT_ACTION::REPLAY_SESSION;
+        if (inputs->session_replay_file.empty())
+            error_messages.push_back("Replay Session :: please insert a path to a file");
+        else if (!std::filesystem::exists(inputs->session_replay_file))
+            error_messages.push_back("Replay Session :: file does not exists");
+        // TODO: check file format
+    }
+
     for (const auto& err_msg : error_messages)
         ImGui::Text(err_msg.c_str()); // TODO: red text
-
     ImGui::End();
-    return form_validated && error_messages.empty();
+
+    return error_messages.empty() ? user_action : Gui::INPUT_ACTION::NO_ACTION;
 }
 
 Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing)
