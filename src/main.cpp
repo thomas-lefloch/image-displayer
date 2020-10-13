@@ -28,9 +28,6 @@ ImVec4 clear_color = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 
 int main()
 {
-
-    Session::is_file_format_valid("C:\\Users\\thomas\\Documents\\_dessin\\poses\\sessions\\16004222866531213.txt");
-
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
