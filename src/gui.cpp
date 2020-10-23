@@ -8,39 +8,46 @@
 
 #include "gui.hpp"
 
-Gui::INPUT_ACTION Gui::input_dialog(UserInput* inputs)
+Gui::INPUT_ACTION Gui::input_dialog(UserInput& inputs)
 {
     static std::vector<std::string> error_messages;
     Gui::INPUT_ACTION user_action = Gui::INPUT_ACTION::NO_ACTION;
 
     ImGui::Begin("files");
-    ImGui::InputText("Images folder", &inputs->images_folder);
-    ImGui::InputInt("Timer (sec)", &inputs->timer);
-    ImGui::InputText("Session folder", &inputs->session_folder); // TODO: support filename
+    static std::string images_path = "";
+    ImGui::InputText("Images path", &images_path);
+    ImGui::InputInt("Timer (sec)", &inputs.timer);
+    ImGui::InputText("Session path", &inputs.session_path); // TODO: support filename
     if (ImGui::Button("Ok")) {
         error_messages.clear();
         user_action = Gui::INPUT_ACTION::NEW_SESSION;
-        // images_folder errors
-        if (inputs->images_folder.empty())
-            error_messages.push_back("Images folder :: please insert a path to a directory");
-        else if (!std::filesystem::is_directory(inputs->images_folder))
-            error_messages.push_back(inputs->images_folder + " not found or is not a directory");
+        // images_path errors
+        if (images_path.empty())
+            error_messages.push_back("Images path :: please insert a path to a directory");
+        else if (!std::filesystem::is_directory(images_path))
+            error_messages.push_back(images_path + " not found or is not a directory");
         // timer errors
-        if (inputs->timer < 1) error_messages.push_back("timer must be > 1 sec");
-        // session_folder errors
-        if (inputs->session_folder.empty())
-            error_messages.push_back("Session Folder :: please insert a path to a directory");
-        else if (!std::filesystem::is_directory(inputs->session_folder))
-            error_messages.push_back(inputs->session_folder + " not found or is not a directory");
+        if (inputs.timer < 1) error_messages.push_back("timer must be > 1 sec");
+        // session_path errors
+        if (inputs.session_path.empty())
+            error_messages.push_back("Session path :: please insert a path to a directory");
+        else if (!std::filesystem::is_directory(inputs.session_path))
+            error_messages.push_back(inputs.session_path + " not found or is not a directory");
+
+        if (error_messages.empty()) {
+            for (const auto& file : std::filesystem::directory_iterator(images_path))
+                inputs.images.push_back(file.path().string());
+        }
     }
 
-    ImGui::InputText("Session File", &inputs->session_replay_file);
+    static std::string replay_session_file;
+    ImGui::InputText("Session File", &replay_session_file);
     if (ImGui::Button("Replay session")) {
         error_messages.clear();
         user_action = Gui::INPUT_ACTION::REPLAY_SESSION;
-        if (inputs->session_replay_file.empty())
+        if (replay_session_file == "")
             error_messages.push_back("Replay Session :: please insert a path to a file");
-        else if (!std::filesystem::exists(inputs->session_replay_file))
+        else if (!std::filesystem::exists(replay_session_file))
             error_messages.push_back("Replay Session :: file does not exists");
         // TODO: check file format
     }

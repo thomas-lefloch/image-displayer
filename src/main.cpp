@@ -131,7 +131,7 @@ int main()
             while (s->session_filepath.empty()) {
                 const auto timestamp = std::chrono::system_clock::now().time_since_epoch().count();
                 // windows automatically translate "/" to "\\"
-                const auto filepath = s->user_input.session_folder + "/" + std::to_string(timestamp) + ".txt";
+                const auto filepath = s->user_input.session_path + "/" + std::to_string(timestamp) + ".txt";
                 if (!std::filesystem::exists(filepath)) s->session_filepath = filepath;
                 // opening save_file two times beacause i don't know how to check if file is empty with ofstream
                 save_file.open(s->session_filepath, std::ios::app);
@@ -159,15 +159,17 @@ int main()
         ImGui::NewFrame();
 
         if (state.selected_files.empty()) {
-            switch (Gui::input_dialog(&state.user_input)) {
+            switch (Gui::input_dialog(state.user_input)) {
             case Gui::INPUT_ACTION::NEW_SESSION:
                 state.time_left = state.user_input.timer;
-                for (const auto& file : std::filesystem::directory_iterator(state.user_input.images_folder))
-                    state.selected_files.push_back(file.path().string());
+                state.selected_files = state.user_input.images;
                 next_image(&distribution, &generator, &state);
                 break;
             case Gui::INPUT_ACTION::REPLAY_SESSION:
                 // parse file, set timer, set state.displayed_images to all images in file
+                state.displayed_images = state.user_input.images;
+                state.time_left = state.user_input.timer;
+                next_image(&distribution, &generator, &state);
                 break;
             case Gui::INPUT_ACTION::NO_ACTION:
                 break;

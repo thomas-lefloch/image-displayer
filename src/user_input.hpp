@@ -5,8 +5,7 @@
 #include <iostream>
 
 struct UserInput {
-    std::string images_folder = "";
+    std::vector<std::string> images;
     int timer = 30;
-    std::string session_folder = "";
-    std::string session_replay_file = "";
+    std::string session_path = "";
 };
