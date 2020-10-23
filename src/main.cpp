@@ -19,7 +19,6 @@
 #include "user_input.hpp"
 #include "texture.hpp"
 #include "gui.hpp"
-#include "session.hpp"
 
 constexpr int window_width = 1600;
 constexpr int window_height = 900;
@@ -97,6 +96,7 @@ int main()
     struct State {
         Texture current_texture;
         UserInput user_input;
+        // TODO: replace those by double linked list
         std::vector<std::string> selected_files;
         std::vector<std::string> displayed_images;
         int current_image_idx = 0;
@@ -167,6 +167,7 @@ int main()
                 break;
             case Gui::INPUT_ACTION::REPLAY_SESSION:
                 // parse file, set timer, set state.displayed_images to all images in file
+                state.selected_files = state.user_input.images;
                 state.displayed_images = state.user_input.images;
                 state.time_left = state.user_input.timer;
                 next_image(&distribution, &generator, &state);

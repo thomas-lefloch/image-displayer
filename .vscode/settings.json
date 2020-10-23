@@ -52,6 +52,10 @@
     "xlocbuf": "cpp",
     "xlocmes": "cpp",
     "xlocmon": "cpp",
-    "xloctime": "cpp"
+    "xloctime": "cpp",
+    "atomic": "cpp",
+    "compare": "cpp",
+    "iterator": "cpp",
+    "regex": "cpp"
   }
 }
