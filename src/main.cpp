@@ -10,15 +10,15 @@
 #include <fstream>
 #include <math.h>
 #include <time.h>
+#include <filesystem>
 #include <stdio.h>
 #include <helpers/RootDir.h>
-#include <filesystem>
 #include <random>
 
 #include "shader.hpp"
 #include "user_input.hpp"
-#include "texture.hpp"
 #include "gui.hpp"
+#include "image_player.hpp"
 
 constexpr int window_width = 1600;
 constexpr int window_height = 900;
@@ -93,64 +93,14 @@ int main()
     std::mt19937 generator(device());
     std::uniform_real_distribution<double> distribution(0, 1);
 
-    struct State {
-        Texture current_texture;
-        UserInput user_input;
-        // TODO: replace those by double linked list
-        std::vector<std::string> selected_files;
-        std::vector<std::string> displayed_images;
-        int current_image_idx = 0;
-        std::string session_filepath;
-        bool playing = false;
-        double time_left;
-    };
-
-    State state;
-
-    auto next_image = [](std::uniform_real_distribution<double> * dist, std::mt19937 * gen, State * s) -> auto
-    {
-        // FIXME: throws execption if clicking close (clearing the file list) at the same moment as picking a filename
-        glDeleteTextures(1, &s->current_texture.id);
-
-        std::string selected_filepath;
-        bool new_image = false;
-        int max_index = s->displayed_images.size() - 1; // ¯\_(ツ)_/¯ bugged when inlining into if statement
-        if (s->current_image_idx < max_index) {
-            selected_filepath = s->displayed_images[++s->current_image_idx];
-        } else {
-            selected_filepath = s->selected_files.at((int)((*dist)(*gen) * s->selected_files.size()));
-            new_image = true;
-        }
-        bool image_loaded = Texture::load_from_file(selected_filepath.c_str(), &s->current_texture);
-
-        if (image_loaded && new_image) {
-            s->displayed_images.push_back(selected_filepath);
-            s->current_image_idx = s->displayed_images.size() - 1;
-            // saving filename into session
-            std::ofstream save_file;
-            while (s->session_filepath.empty()) {
-                const auto timestamp = std::chrono::system_clock::now().time_since_epoch().count();
-                // windows automatically translate "/" to "\\"
-                const auto filepath = s->user_input.session_path + "/" + std::to_string(timestamp) + ".txt";
-                if (!std::filesystem::exists(filepath)) s->session_filepath = filepath;
-                // opening save_file two times beacause i don't know how to check if file is empty with ofstream
-                save_file.open(s->session_filepath, std::ios::app);
-                save_file << std::to_string(s->user_input.timer) + "\n"; // first line of the session file is the timer
-                save_file.close();
-            }
-            save_file.open(s->session_filepath, std::ios::app);
-            save_file << selected_filepath << "\n";
-            save_file.close();
-        }
-        return image_loaded;
-    };
+    ImagePlayer image_player;
+    UserInput user_input;
 
     while (!glfwWindowShouldClose(window)) {
         double start_time = glfwGetTime();
-        if (state.playing && state.time_left < 0) {
-            next_image(&distribution, &generator, &state);
-            state.time_left = state.user_input.timer;
-        }
+
+        if (image_player.playing && image_player.time_left < 0) //
+            image_player.next(distribution, generator, user_input);
 
         glfwPollEvents();
 
@@ -158,44 +108,32 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (state.selected_files.empty()) {
-            switch (Gui::input_dialog(state.user_input)) {
+        if (user_input.images.empty()) {
+            switch (Gui::input_dialog(user_input)) {
             case Gui::INPUT_ACTION::NEW_SESSION:
-                state.time_left = state.user_input.timer;
-                state.selected_files = state.user_input.images;
-                next_image(&distribution, &generator, &state);
+                image_player.next(distribution, generator, user_input);
                 break;
             case Gui::INPUT_ACTION::REPLAY_SESSION:
-                // parse file, set timer, set state.displayed_images to all images in file
-                state.selected_files = state.user_input.images;
-                state.displayed_images = state.user_input.images;
-                state.time_left = state.user_input.timer;
-                next_image(&distribution, &generator, &state);
+                image_player.set_images(user_input.images);
+                image_player.next(distribution, generator, user_input);
                 break;
             case Gui::INPUT_ACTION::NO_ACTION:
                 break;
             }
         } else {
-            switch (Gui::control_panel(state.time_left, state.playing)) {
+            switch (Gui::control_panel(image_player.time_left, image_player.playing)) {
             case Gui::CP_ACTION::PLAY_PAUSE:
-                state.playing = !state.playing;
+                image_player.playing = !image_player.playing;
                 break;
             case Gui::CP_ACTION::PREVIOUS:
-                if (state.current_image_idx > 0) {
-                    state.time_left = state.user_input.timer;
-                    glDeleteTextures(1, &state.current_texture.id);
-                    Texture::load_from_file(
-                        state.displayed_images[--state.current_image_idx].c_str(), &state.current_texture);
-                }
+                image_player.previous(user_input);
                 break;
             case Gui::CP_ACTION::NEXT:
-                next_image(&distribution, &generator, &state);
-                state.time_left = state.user_input.timer;
+                image_player.next(distribution, generator, user_input);
                 break;
             case Gui::CP_ACTION::CLOSE: {
-                state.selected_files.clear();
-                state.displayed_images.clear();
-                state.playing = false;
+                user_input.clear_images();
+                image_player.reset();
                 break;
             }
             case Gui::CP_ACTION::NOOP:
@@ -212,14 +150,14 @@ int main()
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (state.current_texture.id) {
-            glBindTexture(GL_TEXTURE_2D, state.current_texture.id);
+        if (image_player.current_texture.id) {
+            glBindTexture(GL_TEXTURE_2D, image_player.current_texture.id);
             glUseProgram(shader_id);
             glBindVertexArray(vao);
             // probably exist a better solution to make the image fit the window
             float img_ratio[2] = { //
-                (float)state.current_texture.width / (float)window_width,
-                (float)state.current_texture.height / (float)window_height
+                (float)image_player.current_texture.width / (float)window_width,
+                (float)image_player.current_texture.height / (float)window_height
             };
             if (img_ratio[0] < img_ratio[1]) {
                 img_ratio[0] = img_ratio[0] / img_ratio[1];
@@ -235,7 +173,7 @@ int main()
 
         glfwSwapBuffers(window);
 
-        if (state.playing) state.time_left -= glfwGetTime() - start_time;
+        if (image_player.playing) image_player.time_left -= glfwGetTime() - start_time;
     }
 
     ImGui_ImplOpenGL3_Shutdown();

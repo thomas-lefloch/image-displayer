@@ -1,11 +1,14 @@
 #ifndef user_input_h
 #define user_input_h
-#endif
 
 #include <iostream>
+#include <vector>
 
 struct UserInput {
     std::vector<std::string> images;
     int timer = 30;
     std::string session_path = "";
+
+    void clear_images() { images.clear(); }
 };
+#endif

@@ -1,3 +1,6 @@
+#ifndef texture_h
+#define texture_h
+
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include <helpers/RootDir.h>
@@ -7,7 +10,6 @@ struct Texture {
     int width = 0;
     int height = 0;
 
-    // why not in a constructor ????
     static bool load_from_file(const char* filename, Texture* out_texture)
     {
         // Load from file
@@ -22,7 +24,6 @@ struct Texture {
         glBindTexture(GL_TEXTURE_2D, image_texture);
 
         // Setup filtering parameters for display
-        // TODO: fix image quality
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -42,3 +43,4 @@ struct Texture {
         return true;
     }
 };
+#endif

@@ -1,8 +1,8 @@
-#include <iostream>
+#ifndef gui_h
+#define gui_h
 
-#ifndef user_input_h
+#include <iostream>
 #include "user_input.hpp"
-#endif
 
 namespace Gui {
 
@@ -12,3 +12,5 @@ enum CP_ACTION { NOOP, PREVIOUS, NEXT, CLOSE, PLAY_PAUSE };
 CP_ACTION control_panel(int time_left, const bool playing);
 
 };
+
+#endif

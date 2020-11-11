@@ -1,3 +1,5 @@
+#ifndef session_h
+#define session_h
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -31,3 +33,4 @@ bool parse_file(const std::string& path, int& out_timer, std::vector<std::string
     return true;
 }
 }
+#endif

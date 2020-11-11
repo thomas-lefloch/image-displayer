@@ -19,7 +19,7 @@ Gui::INPUT_ACTION Gui::input_dialog(UserInput& inputs)
     ImGui::InputText("Images path", &image_folder_path);
     ImGui::InputInt("Timer (sec)", &inputs.timer);
     ImGui::InputText("Session path", &inputs.session_path); // TODO: support filename
-    if (ImGui::Button("Ok")) {
+    if (ImGui::Button("Begin New Session")) {
         error_messages.clear();
         user_action = Gui::INPUT_ACTION::NEW_SESSION;
 
