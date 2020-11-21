@@ -9,6 +9,6 @@ struct UserInput {
     int timer = 30;
     std::string session_path = "";
 
-    void clear_images() { images.clear(); }
+    void clean() { images.clear(); }
 };
 #endif

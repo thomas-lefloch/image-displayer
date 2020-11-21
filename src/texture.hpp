@@ -10,7 +10,8 @@ struct Texture {
     int width = 0;
     int height = 0;
 
-    static bool load_from_file(const char* filename, Texture* out_texture)
+    // DeleteTexture in deconstuctor, or before loading new texture ??
+    static bool load_from_file(const char* filename, Texture& out_texture)
     {
         // Load from file
         int image_width = 0;
@@ -36,9 +37,9 @@ struct Texture {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
         stbi_image_free(image_data);
 
-        out_texture->id = image_texture;
-        out_texture->width = image_width;
-        out_texture->height = image_height;
+        out_texture.id = image_texture;
+        out_texture.width = image_width;
+        out_texture.height = image_height;
 
         return true;
     }

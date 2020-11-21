@@ -118,12 +118,13 @@ int main()
                 image_player.next(distribution, generator, user_input);
                 break;
             case Gui::INPUT_ACTION::NO_ACTION:
+            default:
                 break;
             }
         } else {
             switch (Gui::control_panel(image_player.time_left, image_player.playing)) {
             case Gui::CP_ACTION::PLAY_PAUSE:
-                image_player.playing = !image_player.playing;
+                image_player.toggle_play();
                 break;
             case Gui::CP_ACTION::PREVIOUS:
                 image_player.previous(user_input);
@@ -132,12 +133,11 @@ int main()
                 image_player.next(distribution, generator, user_input);
                 break;
             case Gui::CP_ACTION::CLOSE: {
-                user_input.clear_images();
+                user_input.clean();
                 image_player.reset();
                 break;
             }
             case Gui::CP_ACTION::NOOP:
-                break;
             default:
                 break;
             };
