@@ -6,9 +6,9 @@
 
 struct UserInput {
     std::vector<std::string> images;
-    int timer = 30;
+    std::string image_folder_path = "";
     std::string session_path = "";
-
+    int timer = 30;
     void clean() { images.clear(); }
 };
 #endif

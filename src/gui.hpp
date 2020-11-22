@@ -1,16 +1,34 @@
 #ifndef gui_h
 #define gui_h
 
+#include <GLFW/glfw3.h>
 #include <iostream>
+
 #include "user_input.hpp"
+#include "image_player.hpp"
 
-namespace Gui {
+struct GuiInformations {
+    GLFWwindow* window;
+    int shader_id = 0;
+    const int window_width = 1600;
+    const int window_height = 900;
+    GLuint vao = 0;
+    int img_ratio_uniform = 0;
+};
 
-enum INPUT_ACTION { NO_ACTION, REPLAY_SESSION, NEW_SESSION };
-INPUT_ACTION input_dialog(UserInput& inputs);
-enum CP_ACTION { NOOP, PREVIOUS, NEXT, CLOSE, PLAY_PAUSE };
-CP_ACTION control_panel(int time_left, const bool playing);
+struct Gui {
+    // Not Good looks like we are passing options for the gui to init but it is init's return value
+    static bool init(GuiInformations& infos);
+    static void clean(GuiInformations& infos);
+    static void begin_new_imgui_frame();
 
+    static void display_new_frame(
+        const GuiInformations& gui_infos, const UserInput& user_inputs, const ImagePlayer& image_player);
+
+    enum INPUT_ACTION { NO_ACTION, REPLAY_SESSION, NEW_SESSION };
+    enum CP_ACTION { NOOP, PREVIOUS, NEXT, CLOSE, PLAY_PAUSE };
+    static INPUT_ACTION input_dialog(UserInput& inputs);
+    static CP_ACTION control_panel(int time_left, const bool playing);
 };
 
 #endif

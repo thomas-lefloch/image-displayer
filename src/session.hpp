@@ -21,6 +21,7 @@ bool parse_file(const std::string& path, int& out_timer, std::vector<std::string
     try {
         out_timer = std::stoi(first_line);
     } catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
         file.close();
         return false;
     }

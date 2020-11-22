@@ -3,11 +3,9 @@
 
 #include "user_input.hpp"
 #include "texture.hpp"
-#include "gui.hpp"
 #include <random>
 #include <vector>
 #include <list>
-#include <iterator>
 
 struct ImagePlayer {
 
@@ -19,9 +17,19 @@ struct ImagePlayer {
     bool playing = false;
     double time_left;
 
-    ImagePlayer() { it = displayed_images.begin(); }
+    // should be pointers
+    std::random_device device;
+    std::mt19937 generator;
+    std::uniform_real_distribution<double> distribution;
 
-    bool next(std::uniform_real_distribution<double>& dist, std::mt19937& gen, const UserInput& user_input);
+    ImagePlayer()
+    {
+        it = displayed_images.begin();
+        generator = std::mt19937(device());
+        distribution = std::uniform_real_distribution<double>(0, 1);
+    }
+
+    bool next(const UserInput& user_input);
     bool previous(const UserInput& user_input);
     void set_images(const std::vector<std::string>& images)
     {

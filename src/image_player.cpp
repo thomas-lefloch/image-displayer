@@ -8,7 +8,7 @@
 
 // FIXME: throws execption if clicking close (clearing the file list) at the same moment as picking a
 // filename
-bool ImagePlayer::next(std::uniform_real_distribution<double>& dist, std::mt19937& gen, const UserInput& user_input)
+bool ImagePlayer::next(const UserInput& user_input)
 {
     time_left = user_input.timer;
     glDeleteTextures(1, &current_texture.id);
@@ -16,7 +16,7 @@ bool ImagePlayer::next(std::uniform_real_distribution<double>& dist, std::mt1993
     if (displayed_images.size() > 0 && it != --displayed_images.end()) {
         return Texture::load_from_file((++it)->c_str(), current_texture);
     } else {
-        std::string next_image = user_input.images.at((int)(dist(gen) * user_input.images.size()));
+        std::string next_image = user_input.images.at((int)(distribution(generator) * user_input.images.size()));
         displayed_images.push_back(next_image);
         it = --displayed_images.end();
 
