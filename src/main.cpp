@@ -6,6 +6,7 @@
 #include "user_input.hpp"
 #include "image_player.hpp"
 #include "gui.hpp"
+#include "preferences.hpp"
 
 int main()
 {
@@ -33,6 +34,8 @@ int main()
                 image_player.set_images(user_inputs.images);
                 image_player.next(user_inputs);
                 break;
+            case Gui::INPUT_ACTION::SAVE_PREFERENCES:
+                Preferences::save(user_inputs);
             case Gui::INPUT_ACTION::NO_ACTION:
             default:
                 break;

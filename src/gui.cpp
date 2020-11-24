@@ -45,6 +45,11 @@ Gui::INPUT_ACTION Gui::input_dialog(UserInput& inputs)
                 inputs.images.push_back(file.path().string());
         }
     }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Save Preferences")) { user_action = Gui::INPUT_ACTION::SAVE_PREFERENCES; }
+
+    ImGui::NewLine();
 
     static std::string session_file_path;
     ImGui::InputText("Session File", &session_file_path);
@@ -66,6 +71,7 @@ Gui::INPUT_ACTION Gui::input_dialog(UserInput& inputs)
         ImGui::Text(err_msg.c_str()); // TODO: red text
     ImGui::End();
 
+    if (user_action == Gui::INPUT_ACTION::SAVE_PREFERENCES) return user_action; // kinda hacky
     return error_messages.empty() ? user_action : Gui::INPUT_ACTION::NO_ACTION;
 }
 

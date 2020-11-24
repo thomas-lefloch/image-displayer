@@ -25,7 +25,7 @@ struct Gui {
     static void display_new_frame(
         const GuiInformations& gui_infos, const UserInput& user_inputs, const ImagePlayer& image_player);
 
-    enum INPUT_ACTION { NO_ACTION, REPLAY_SESSION, NEW_SESSION };
+    enum INPUT_ACTION { NO_ACTION, REPLAY_SESSION, NEW_SESSION, SAVE_PREFERENCES };
     enum CP_ACTION { NOOP, PREVIOUS, NEXT, CLOSE, PLAY_PAUSE };
     static INPUT_ACTION input_dialog(UserInput& inputs);
     static CP_ACTION control_panel(int time_left, const bool playing);
