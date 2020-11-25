@@ -16,6 +16,8 @@ int main()
     ImagePlayer image_player;
     UserInput user_inputs;
 
+    Preferences::load(user_inputs);
+
     while (!glfwWindowShouldClose(gui_infos.window)) {
         double start_time = glfwGetTime();
 

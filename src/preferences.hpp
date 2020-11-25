@@ -4,8 +4,7 @@
 #include "user_input.hpp"
 struct Preferences {
     static bool save(const UserInput& inputs);
-
-private:
+    static bool load(UserInput& out);
 };
 
 #endif
