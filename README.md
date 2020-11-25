@@ -1,35 +1,28 @@
 # Image displayer
-Displays random images from selected directories during a selected time
+Displays a random image from a selected directory in a timely manner (each x seconds)
 
 ## State
-Work in progress. usable but still need some major feature (previous, selecting multiple folders, ...) and some QOL improvements
-
-## TODO 
-* Put icon on control pannel
-* list all available features under Done section
-* see "// TODO:" comment for more
+Usable
+Still need some major features (selecting multiple folders, ...) and some QOL improvements
 
 ## features
 
 ### Done
-* Save image display order (session) into file -> DONE
+* Displaying a random image from a selected directory in a timely manner
+* Saving preferences
+* Replay Sessions
 
-### Coming features (no particular order)
+### Coming (no particular order)
 * Select images from multiple folder
-* Replay sessions
+* File Browsers
 * Keyboard Shorcuts
-* Save preferences (session files, what folders to load) 
 
-### Maybe feature ? (no particular order)
-* rotate image
-* zoom in/out
-* draw over image ????
-* user experience enhancement (file browser, ...)
-* video display
-* fullscreen
+### Maybe ? (no particular order)
+* Rotate image
+* Zoom in/out
+* Draw over image ????
+* Video display
+* Fullscreen
 
 ## Licence
 not decided yet but software is free to use 
-
-## Icons
-Icons made by [roundicons](https://www.flaticon.com/authors/roundicons) from [Flaticon](www.flaticon.com)
