@@ -31,8 +31,8 @@ jobs:
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: |
-          ls
-          cmake
+          ls ..
+          cmake ..
 
     - name: Build
       # Execute the build.  You can specify a specific target with "--target <NAME>"
