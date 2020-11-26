@@ -32,7 +32,7 @@ jobs:
       run: cmake --build ${{runner.workspace}}/build --config Release
 
     - name: Prepare Release
-      run: Compress-Archive ${{runner.workspace}}\build\Release ImageDisplayer.zip 
+      run: Compress-Archive ${{runner.workspace}}\build\Release\* ImageDisplayer.zip 
 
     - name: Release
       uses: softprops/action-gh-release@v1
