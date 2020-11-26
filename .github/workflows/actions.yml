@@ -27,12 +27,8 @@ jobs:
       run: cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Make VS solution
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: |
-          ls ..
-          cmake ../image_displayer
+      run: cmake .
 
     - name: Build
       # Execute the build.  You can specify a specific target with "--target <NAME>"
