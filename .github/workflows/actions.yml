@@ -31,10 +31,13 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build ${{runner.workspace}}/build --config Release
 
+    - name: Prepare Release
+      run: tar -vzf${{runner.workspace}}\build\Release
+
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.ref }}
-        files: ${{runner.workspace}}\build\Release
+        files: ImageDisplayer.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
