@@ -153,7 +153,7 @@ bool Gui::init(GuiInformations& infos)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    infos.shader_id = create_shader_program(ROOT_DIR "shaders/vertex.vs", ROOT_DIR "shaders/fragment.fs");
+    infos.shader_id = create_shader_program();
     if (infos.shader_id == -1) std::cout << "Error while parsing/compiling shaders" << std::endl;
 
     infos.img_ratio_uniform = glGetUniformLocation(infos.shader_id, "img_ratio");
