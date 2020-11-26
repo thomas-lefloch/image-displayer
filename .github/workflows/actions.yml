@@ -32,7 +32,7 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: |
           ls ..
-          cmake ..
+          cmake ../image_displayer
 
     - name: Build
       # Execute the build.  You can specify a specific target with "--target <NAME>"
