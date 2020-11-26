@@ -3,6 +3,7 @@
 #include <string>
 #include <filesystem>
 
+// TODO: set create preferences.txt where exe is (like imgui.ini)
 static const inline std::string filename = "preferences.txt";
 static const inline std::string project_name = "ImageDisplayer";
 static const inline std::string delimiter = "=";
