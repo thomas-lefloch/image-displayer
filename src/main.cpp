@@ -2,11 +2,13 @@
 
 #include <time.h>
 #include <helpers/RootDir.h>
+#include <filesystem>
 
+#include "current_dir.hpp"
 #include "user_input.hpp"
+#include "preferences.hpp"
 #include "image_player.hpp"
 #include "gui.hpp"
-#include "preferences.hpp"
 
 int main()
 {
@@ -15,6 +17,11 @@ int main()
 
     ImagePlayer image_player;
     UserInput user_inputs;
+    // Settings defaults
+    user_inputs.session_path = current_directory() + "\\sessions";
+
+    if (!std::filesystem::exists(user_inputs.session_path)) //
+        std::filesystem::create_directory(user_inputs.session_path);
 
     Preferences::load(user_inputs);
 
@@ -43,7 +50,7 @@ int main()
                 break;
             }
         } else {
-            switch (Gui::control_panel(image_player.time_left, image_player.playing)) {
+            switch (Gui::control_panel((int)image_player.time_left, image_player.playing)) {
             case Gui::CP_ACTION::PLAY_PAUSE:
                 image_player.toggle_play();
                 break;
