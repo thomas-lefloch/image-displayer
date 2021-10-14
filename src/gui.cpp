@@ -179,7 +179,7 @@ void Gui::begin_new_imgui_frame()
 }
 
 void Gui::display_new_frame(
-    const GuiInformations& gui_infos, const UserInput& user_inputs, const ImagePlayer& image_player)
+    GuiInformations& gui_infos, const UserInput& user_inputs, const ImagePlayer& image_player)
 {
     // TODO: check integrity,
 
@@ -187,7 +187,9 @@ void Gui::display_new_frame(
     int display_w, display_h;
     glfwGetFramebufferSize(gui_infos.window, &display_w, &display_h);
     glViewport(0, 0, display_w, display_h);
-    glClearColor(0.20f, 0.20f, 0.20f, 1.00f);
+    gui_infos.window_width = display_w;
+    gui_infos.window_height = display_h;
+    glClearColor(0.10f, 0.10f, 0.10f, 1.00f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     if (image_player.current_texture.id) {

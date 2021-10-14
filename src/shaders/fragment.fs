@@ -6,5 +6,7 @@ uniform sampler2D image;
 
 out vec4 out_color;
 
-void main() { out_color = texture(image, texture_cord); }
+void main() { 
+  out_color = texture(image, texture_cord);
+}
 )"

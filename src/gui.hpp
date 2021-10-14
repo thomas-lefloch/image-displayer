@@ -10,8 +10,8 @@
 struct GuiInformations {
     GLFWwindow* window;
     int shader_id = 0;
-    const int window_width = 1600;
-    const int window_height = 900;
+    int window_width = 1600;
+    int window_height = 900;
     GLuint vao = 0;
     int img_ratio_uniform = 0;
 };
@@ -22,8 +22,7 @@ struct Gui {
     static void clean(GuiInformations& infos);
     static void begin_new_imgui_frame();
 
-    static void display_new_frame(
-        const GuiInformations& gui_infos, const UserInput& user_inputs, const ImagePlayer& image_player);
+    static void display_new_frame( GuiInformations& gui_infos, const UserInput& user_inputs, const ImagePlayer& image_player);
 
     enum class INPUT_ACTION { NO_ACTION, REPLAY_SESSION, NEW_SESSION, SAVE_PREFERENCES };
     enum class CP_ACTION { NOOP, PREVIOUS, NEXT, CLOSE, PLAY_PAUSE };
