@@ -75,7 +75,7 @@ Gui::INPUT_ACTION Gui::input_dialog(UserInput& inputs)
     return error_messages.empty() ? user_action : Gui::INPUT_ACTION::NO_ACTION;
 }
 
-Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing, bool& black_white, float& contrast)
+Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing, bool& black_white, float& contrast, bool& negative)
 {
     Gui::CP_ACTION action = Gui::CP_ACTION::NOOP;
     ImGui::Begin("Control panel");
@@ -90,6 +90,7 @@ Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing, bool&
     if (ImGui::Button("Next")) action = Gui::CP_ACTION::NEXT;
     if (ImGui::Button("Close")) action = Gui::CP_ACTION::CLOSE;
     ImGui::Checkbox("Black & White", &black_white);
+    ImGui::Checkbox("Negative", &negative);
     ImGui::SliderFloat("Contrast", &contrast, -0.5f, 0.5f);
 
     ImGui::End();
@@ -162,7 +163,7 @@ bool Gui::init(GuiInformations& infos)
     infos.img_ratio_uniform = glGetUniformLocation(infos.shader_id, "img_ratio");
     infos.black_white_uniform = glGetUniformLocation(infos.shader_id, "black_white");
     infos.contrast_uniform = glGetUniformLocation(infos.shader_id, "contrast");
-
+    infos.negative_uniform = glGetUniformLocation(infos.shader_id, "negative");
     return true;
 }
 
@@ -215,6 +216,7 @@ void Gui::display_new_frame(GuiInformations& gui_infos, const UserInput& user_in
         glUniform2fv(gui_infos.img_ratio_uniform, 1, img_ratio);
         glUniform1i(gui_infos.black_white_uniform, image_player.black_white);
         glUniform1f(gui_infos.contrast_uniform, image_player.contrast);
+        glUniform1i(gui_infos.negative_uniform, image_player.negative);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

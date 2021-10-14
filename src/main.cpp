@@ -50,7 +50,7 @@ int main()
                 break;
             }
         } else {
-            switch (Gui::control_panel((int)image_player.time_left, image_player.playing, image_player.black_white, image_player.contrast)) {
+            switch (Gui::control_panel((int)image_player.time_left, image_player.playing, image_player.black_white, image_player.contrast, image_player.negative)) {
             case Gui::CP_ACTION::PLAY_PAUSE:
                 image_player.toggle_play();
                 break;

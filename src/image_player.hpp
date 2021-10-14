@@ -17,6 +17,7 @@ struct ImagePlayer {
     bool playing = false;
     double time_left;
     bool black_white = false;
+    bool negative = false;
     float contrast = 0.0f;
 
     // should be pointers
