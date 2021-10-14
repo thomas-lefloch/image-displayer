@@ -19,9 +19,9 @@ void main() {
     color = 1 - color;
   }
   float contrast_factor = (1+contrast) / (1-contrast);
+  // TODO: replace 0.5 with mean brightness of image
   vec3 contrasted_color = contrast_factor*(color - vec3(0.5)) + vec3(0.5);
-  // vec3 contrasted_color = contrast*(color - vec3(0.5)) + vec3(0.5);
- 
+
   out_color = vec4(contrasted_color, 1.0);
 }
 )"

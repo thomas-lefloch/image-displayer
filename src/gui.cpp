@@ -91,7 +91,7 @@ Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing, bool&
     if (ImGui::Button("Close")) action = Gui::CP_ACTION::CLOSE;
     ImGui::Checkbox("Black & White", &black_white);
     ImGui::Checkbox("Negative", &negative);
-    ImGui::SliderFloat("Contrast", &contrast, -0.5f, 0.5f);
+    ImGui::SliderFloat("Contrast", &contrast, -1.0f, 1.0f);
 
     ImGui::End();
     return action;
