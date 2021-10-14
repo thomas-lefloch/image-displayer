@@ -4,14 +4,20 @@ R"(
 in vec2 texture_cord;
 uniform sampler2D image;
 uniform bool black_white;
+uniform float contrast;
 
 out vec4 out_color;
 
 void main() { 
-  out_color = texture(image, texture_cord);
+  vec3 color = texture(image, texture_cord).rgb;
   if(black_white == true) {
-    float grey = (out_color.r + out_color.g + out_color.b) / 3.0;
-    out_color = vec4(grey, grey, grey, 1.0);
+    float grey = (color.r + color.g + color.b) / 3.0;
+    color = vec3(grey, grey, grey);
   }
+  float contrast_factor = (1+contrast) / (1-contrast);
+  vec3 contrasted_color = contrast_factor*(color - vec3(0.5)) + vec3(0.5);
+  // vec3 contrasted_color = contrast*(color - vec3(0.5)) + vec3(0.5);
+ 
+  out_color = vec4(contrasted_color, 1.0);
 }
 )"

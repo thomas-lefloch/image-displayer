@@ -17,6 +17,7 @@ struct ImagePlayer {
     bool playing = false;
     double time_left;
     bool black_white = false;
+    float contrast = 0.0f;
 
     // should be pointers
     std::random_device device;

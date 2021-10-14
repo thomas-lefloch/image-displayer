@@ -15,6 +15,7 @@ struct GuiInformations {
     GLuint vao = 0;
     int img_ratio_uniform = 0;
     int black_white_uniform = 0;
+    int contrast_uniform = 0;
 };
 
 struct Gui {
@@ -26,9 +27,9 @@ struct Gui {
     static void display_new_frame( GuiInformations& gui_infos, const UserInput& user_inputs, const ImagePlayer& image_player);
 
     enum class INPUT_ACTION { NO_ACTION, REPLAY_SESSION, NEW_SESSION, SAVE_PREFERENCES };
-    enum class CP_ACTION { NOOP, PREVIOUS, NEXT, CLOSE, PLAY_PAUSE, TOGGLE_BW };
+    enum class CP_ACTION { NOOP, PREVIOUS, NEXT, CLOSE, PLAY_PAUSE };
     static INPUT_ACTION input_dialog(UserInput& inputs);
-    static CP_ACTION control_panel(int time_left, const bool playing, bool black_white);
+    static CP_ACTION control_panel(int time_left, const bool playing, bool& black_white, float& contrast);
 };
 
 #endif
