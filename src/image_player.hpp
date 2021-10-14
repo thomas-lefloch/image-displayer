@@ -16,6 +16,7 @@ struct ImagePlayer {
     std::string session_filepath;
     bool playing = false;
     double time_left;
+    bool black_white = false;
 
     // should be pointers
     std::random_device device;

@@ -50,7 +50,7 @@ int main()
                 break;
             }
         } else {
-            switch (Gui::control_panel((int)image_player.time_left, image_player.playing)) {
+            switch (Gui::control_panel((int)image_player.time_left, image_player.playing, image_player.black_white)) {
             case Gui::CP_ACTION::PLAY_PAUSE:
                 image_player.toggle_play();
                 break;
@@ -63,6 +63,10 @@ int main()
             case Gui::CP_ACTION::CLOSE: {
                 user_inputs.clean();
                 image_player.reset();
+                break;
+            }
+            case Gui::CP_ACTION::TOGGLE_BW: {
+                image_player.black_white = !image_player.black_white;
                 break;
             }
             case Gui::CP_ACTION::NOOP:

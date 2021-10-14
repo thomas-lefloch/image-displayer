@@ -13,7 +13,7 @@
       "args": [],
       "stopAtEntry": false,
       "environment": [],
-      "console": "internalConsole",
+      "console": "integratedTerminal",
       "preLaunchTask": "compile debug"
     }
   ]

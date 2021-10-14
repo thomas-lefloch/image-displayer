@@ -75,7 +75,7 @@ Gui::INPUT_ACTION Gui::input_dialog(UserInput& inputs)
     return error_messages.empty() ? user_action : Gui::INPUT_ACTION::NO_ACTION;
 }
 
-Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing)
+Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing, bool black_white)
 {
     Gui::CP_ACTION action = Gui::CP_ACTION::NOOP;
     ImGui::Begin("Control panel");
@@ -89,6 +89,7 @@ Gui::CP_ACTION Gui::control_panel(const int time_left, const bool playing)
     }
     if (ImGui::Button("Next")) action = Gui::CP_ACTION::NEXT;
     if (ImGui::Button("Close")) action = Gui::CP_ACTION::CLOSE;
+    if (ImGui::Checkbox("Black & White", &black_white)) action = Gui::CP_ACTION::TOGGLE_BW;
     ImGui::End();
     return action;
 }
@@ -157,6 +158,7 @@ bool Gui::init(GuiInformations& infos)
     if (infos.shader_id == -1) std::cout << "Error while parsing/compiling shaders" << std::endl;
 
     infos.img_ratio_uniform = glGetUniformLocation(infos.shader_id, "img_ratio");
+    infos.black_white_uniform = glGetUniformLocation(infos.shader_id, "black_white");
 
     return true;
 }
@@ -178,8 +180,7 @@ void Gui::begin_new_imgui_frame()
     ImGui::NewFrame();
 }
 
-void Gui::display_new_frame(
-    GuiInformations& gui_infos, const UserInput& user_inputs, const ImagePlayer& image_player)
+void Gui::display_new_frame(GuiInformations& gui_infos, const UserInput& user_inputs, const ImagePlayer& image_player)
 {
     // TODO: check integrity,
 
@@ -209,6 +210,7 @@ void Gui::display_new_frame(
             img_ratio[0] = 1;
         }
         glUniform2fv(gui_infos.img_ratio_uniform, 1, img_ratio);
+        glUniform1i(gui_infos.black_white_uniform, image_player.black_white);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
